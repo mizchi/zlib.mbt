@@ -54,6 +54,10 @@ fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
 
 ///|
 fn BitReader::align_byte(self : BitReader) -> Unit {
+  let full_bytes = self.bit_count / 8
+  if full_bytes > 0 {
+    self.byte_pos = self.byte_pos - full_bytes
+  }
   self.bit_buf = 0
   self.bit_count = 0
 }

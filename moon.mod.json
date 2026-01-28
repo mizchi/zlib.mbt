@@ -1,12 +1,17 @@
 {
   "name": "mizchi/zlib",
   "version": "0.1.0",
-  "deps": {},
-  "source": "src",
-  "preferred-target": "js",
+  "deps": {
+    "moonbitlang/x": "0.4.38"
+  },
   "readme": "README.mbt.md",
   "repository": "https://github.com/mizchi/zlib",
   "license": "Apache-2.0",
-  "keywords": ["zlib", "deflate"],
-  "description": "Pure MoonBit zlib/deflate implementation."
+  "keywords": [
+    "zlib",
+    "deflate"
+  ],
+  "description": "Pure MoonBit zlib/deflate implementation.",
+  "source": "src",
+  "preferred-target": "js"
 }

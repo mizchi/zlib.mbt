@@ -143,26 +143,62 @@ test "gzip decompress fixture" {
 }
 
 ///|
-fn hex_char_to_int(c : Char) -> Int {
-  if c >= '0' && c <= '9' {
-    c.to_int() - '0'.to_int()
-  } else if c >= 'a' && c <= 'f' {
-    c.to_int() - 'a'.to_int() + 10
-  } else if c >= 'A' && c <= 'F' {
-    c.to_int() - 'A'.to_int() + 10
-  } else {
-    0
+let fixture_size : Int = 256 * 1024
+
+///|
+fn assert_fixture_pattern(data : Bytes) -> Unit raise {
+  if data.length() != fixture_size {
+    fail("fixture length mismatch: \{data.length()}")
+  }
+  for i in 0..<fixture_size {
+    let expected = (i % 256).to_byte()
+    if data[i] != expected {
+      fail("fixture mismatch at \{i}")
+    }
   }
 }
 
 ///|
-fn hex_to_bytes(hex : String) -> Bytes {
-  let bytes : Array[Byte] = []
-  let chars = hex.to_array()
-  for i in 0..<(hex.length() / 2) {
-    let hi = hex_char_to_int(chars[i * 2])
-    let lo = hex_char_to_int(chars[i * 2 + 1])
-    bytes.push(((hi << 4) | lo).to_byte())
-  }
-  Bytes::from_array(FixedArray::makei(bytes.length(), fn(i) { bytes[i] }))
+test "deflate decompress dynamic fixture" {
+  let compressed = try! @fs.read_file_to_bytes(
+    "fixtures/deflate_dynamic_256k.bin",
+  )
+  let decompressed = deflate_decompress(compressed)
+  assert_fixture_pattern(decompressed)
+}
+
+///|
+test "adler32 dynamic fixture" {
+  let compressed = try! @fs.read_file_to_bytes(
+    "fixtures/deflate_dynamic_256k.bin",
+  )
+  let decompressed = deflate_decompress(compressed)
+  let checksum = adler32(decompressed)
+  inspect(checksum, content="-1886380573")
+}
+
+///|
+test "zlib decompress dynamic fixture" {
+  let compressed = try! @fs.read_file_to_bytes("fixtures/zlib_dynamic_256k.bin")
+  let decompressed = zlib_decompress(compressed)
+  assert_fixture_pattern(decompressed)
+}
+
+///|
+test "gzip decompress dynamic fixture" {
+  let compressed = try! @fs.read_file_to_bytes("fixtures/gzip_dynamic_256k.bin")
+  let decompressed = gzip_decompress(compressed)
+  assert_fixture_pattern(decompressed)
+}
+
+///|
+test "fixture loader hex roundtrip" {
+  let bytes = Bytes::from_array([b'\x00', b'\x01', b'\xff'])
+  let hex = bytes_to_hex(bytes)
+  inspect(hex, content="0001ff")
+  let back = hex_to_bytes(hex)
+  inspect(back.length(), content="3")
+  inspect(back[0], content="b'\\x00'")
+  inspect(back[1], content="b'\\x01'")
+  inspect(back[2], content="b'\\xFF'")
 }
