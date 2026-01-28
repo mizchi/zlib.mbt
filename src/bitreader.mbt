@@ -1,0 +1,59 @@
+///| Bit reader for deflate streams (LSB-first)
+
+///|
+priv struct BitReader {
+  data : Bytes
+  mut byte_pos : Int
+  mut bit_buf : Int
+  mut bit_count : Int
+}
+
+///|
+fn BitReader::new(data : Bytes, start : Int) -> BitReader {
+  { data, byte_pos: start, bit_buf: 0, bit_count: 0 }
+}
+
+///|
+fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
+  if n == 0 {
+    return 0
+  }
+  while self.bit_count < n {
+    if self.byte_pos >= self.data.length() {
+      raise ZlibError::InvalidData("Unexpected end of deflate stream")
+    }
+    let b = self.data[self.byte_pos].to_int()
+    self.byte_pos = self.byte_pos + 1
+    self.bit_buf = self.bit_buf | (b << self.bit_count)
+    self.bit_count = self.bit_count + 8
+  }
+  let mask = (1 << n) - 1
+  let result = self.bit_buf & mask
+  self.bit_buf = self.bit_buf >> n
+  self.bit_count = self.bit_count - n
+  result
+}
+
+///|
+fn BitReader::align_byte(self : BitReader) -> Unit {
+  self.bit_buf = 0
+  self.bit_count = 0
+}
+
+///|
+fn BitReader::read_byte_aligned(self : BitReader) -> Int raise ZlibError {
+  if self.bit_count != 0 {
+    self.align_byte()
+  }
+  if self.byte_pos >= self.data.length() {
+    raise ZlibError::InvalidData("Unexpected end of deflate stream")
+  }
+  let b = self.data[self.byte_pos].to_int()
+  self.byte_pos = self.byte_pos + 1
+  b
+}
+
+///|
+fn BitReader::offset(self : BitReader) -> Int {
+  self.byte_pos
+}
