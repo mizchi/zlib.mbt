@@ -41,16 +41,37 @@ fn BitReader::align_byte(self : BitReader) -> Unit {
 }
 
 ///|
-fn BitReader::read_byte_aligned(self : BitReader) -> Int raise ZlibError {
+
+///|
+fn BitReader::read_u16_le_aligned(self : BitReader) -> Int raise ZlibError {
   if self.bit_count != 0 {
     self.align_byte()
   }
-  if self.byte_pos >= self.data.length() {
+  if self.byte_pos + 2 > self.data.length() {
     raise ZlibError::InvalidData("Unexpected end of deflate stream")
   }
-  let b = self.data[self.byte_pos].to_int()
-  self.byte_pos = self.byte_pos + 1
-  b
+  let b0 = self.data[self.byte_pos].to_int()
+  let b1 = self.data[self.byte_pos + 1].to_int()
+  self.byte_pos = self.byte_pos + 2
+  b0 | (b1 << 8)
+}
+
+///|
+fn BitReader::read_bytes_aligned(
+  self : BitReader,
+  output : Array[Byte],
+  len : Int,
+) -> Unit raise ZlibError {
+  if self.bit_count != 0 {
+    self.align_byte()
+  }
+  if self.byte_pos + len > self.data.length() {
+    raise ZlibError::InvalidData("Unexpected end of deflate stream")
+  }
+  for i in 0..<len {
+    output.push(self.data[self.byte_pos + i])
+  }
+  self.byte_pos = self.byte_pos + len
 }
 
 ///|

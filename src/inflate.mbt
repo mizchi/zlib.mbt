@@ -75,15 +75,12 @@ fn inflate_stored_block(
   output : Array[Byte],
 ) -> Unit raise ZlibError {
   reader.align_byte()
-  let len = reader.read_byte_aligned() | (reader.read_byte_aligned() << 8)
-  let nlen = reader.read_byte_aligned() | (reader.read_byte_aligned() << 8)
+  let len = reader.read_u16_le_aligned()
+  let nlen = reader.read_u16_le_aligned()
   if (len ^ nlen) != 0xffff {
     raise ZlibError::InvalidData("Invalid stored block length")
   }
-  for _ in 0..<len {
-    let b = reader.read_byte_aligned().to_byte()
-    output.push(b)
-  }
+  reader.read_bytes_aligned(output, len)
 }
 
 ///|
