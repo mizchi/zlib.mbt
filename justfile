@@ -18,6 +18,10 @@ check:
 test:
     moon test --target {{target}}
 
+# Run benchmarks
+bench:
+    moon bench --target {{target}}
+
 # Update snapshot tests
 test-update:
     moon test --update --target {{target}}

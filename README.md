@@ -15,6 +15,7 @@ just           # check + test
 just fmt       # format code
 just check     # type check
 just test      # run tests
+just bench     # run benchmarks
 just test-update  # update snapshot tests
 just info      # generate type definition files
 ```

@@ -1,5 +1,7 @@
 ///|
-/// Run with: moon bench --target js
+/// Run with:
+/// - moon bench --target js
+/// - moon bench --target native
 
 ///|
 let bench_size : Int = 256 * 1024

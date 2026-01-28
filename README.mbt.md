@@ -16,3 +16,9 @@ test "roundtrip stored" {
   inspect(decompressed[4], content="b'\\x6F'")
 }
 ```
+
+```bash
+# Benchmarks
+moon bench --target js
+moon bench --target native
+```
