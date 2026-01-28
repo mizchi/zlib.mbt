@@ -22,6 +22,10 @@ test:
 bench:
     moon bench --target {{target}}
 
+# Compare against system zlib via hyperfine
+bench-compare:
+    bash scripts/bench_compare.sh
+
 # Update snapshot tests
 test-update:
     moon test --update --target {{target}}

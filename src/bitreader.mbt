@@ -4,7 +4,7 @@
 priv struct BitReader {
   data : Bytes
   mut byte_pos : Int
-  mut bit_buf : Int
+  mut bit_buf : UInt64
   mut bit_count : Int
 }
 
@@ -16,13 +16,38 @@ fn BitReader::new(data : Bytes, start : Int) -> BitReader {
 ///|
 fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
   while self.bit_count < n {
-    if self.byte_pos >= self.data.length() {
+    let remaining = self.data.length() - self.byte_pos
+    if remaining <= 0 {
       raise ZlibError::InvalidData("Unexpected end of deflate stream")
     }
-    let b = self.data[self.byte_pos].to_int()
-    self.byte_pos = self.byte_pos + 1
-    self.bit_buf = self.bit_buf | (b << self.bit_count)
-    self.bit_count = self.bit_count + 8
+    // Batch 4 bytes when possible to reduce loop overhead in hot paths.
+    // Use UInt64 to keep shifts safe for native targets.
+    if remaining >= 4 && self.bit_count <= 32 {
+      let b0 = self.data[self.byte_pos].to_uint64()
+      let b1 = self.data[self.byte_pos + 1].to_uint64()
+      let b2 = self.data[self.byte_pos + 2].to_uint64()
+      let b3 = self.data[self.byte_pos + 3].to_uint64()
+      self.byte_pos = self.byte_pos + 4
+      self.bit_buf = self.bit_buf |
+        (b0 << self.bit_count) |
+        (b1 << (self.bit_count + 8)) |
+        (b2 << (self.bit_count + 16)) |
+        (b3 << (self.bit_count + 24))
+      self.bit_count = self.bit_count + 32
+    } else if remaining >= 2 && self.bit_count <= 48 {
+      let b0 = self.data[self.byte_pos].to_uint64()
+      let b1 = self.data[self.byte_pos + 1].to_uint64()
+      self.byte_pos = self.byte_pos + 2
+      self.bit_buf = self.bit_buf |
+        (b0 << self.bit_count) |
+        (b1 << (self.bit_count + 8))
+      self.bit_count = self.bit_count + 16
+    } else {
+      let b = self.data[self.byte_pos].to_uint64()
+      self.byte_pos = self.byte_pos + 1
+      self.bit_buf = self.bit_buf | (b << self.bit_count)
+      self.bit_count = self.bit_count + 8
+    }
   }
 }
 
@@ -32,8 +57,9 @@ fn BitReader::peek_bits(self : BitReader, n : Int) -> Int raise ZlibError {
     return 0
   }
   self.ensure_bits(n)
-  let mask = (1 << n) - 1
-  self.bit_buf & mask
+  let one : UInt64 = 1
+  let mask : UInt64 = (one << n) - 1
+  (self.bit_buf & mask).to_int()
 }
 
 ///|
