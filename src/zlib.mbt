@@ -19,60 +19,79 @@ fn zlib_array_to_bytes(arr : Array[Byte]) -> Bytes {
 }
 
 ///|
-/// Append deflate stored blocks to output (no zlib/gzip wrapper)
-fn append_stored_deflate_blocks(out : Array[Byte], data : Bytes) -> Unit {
+/// Compute stored deflate size (no wrapper)
+fn stored_deflate_len(len : Int) -> Int {
+  if len == 0 {
+    5
+  } else {
+    len + ((len - 1) / max_block_size + 1) * 5
+  }
+}
+
+///|
+/// Write deflate stored blocks into preallocated buffer.
+/// Returns next offset after writing.
+fn write_stored_deflate_blocks(
+  out : FixedArray[Byte],
+  start : Int,
+  data : Bytes,
+) -> Int {
   let len = data.length()
-  let mut offset = 0
-  while offset < len {
-    let remaining = len - offset
+  let mut offset = start
+  let mut pos = 0
+  while pos < len {
+    let remaining = len - pos
     let block_size = if remaining > max_block_size {
       max_block_size
     } else {
       remaining
     }
-    let is_final = offset + block_size >= len
-    if is_final {
-      out.push(b'\x01')
-    } else {
-      out.push(b'\x00')
-    }
-    out.push((block_size & 0xff).to_byte())
-    out.push(((block_size >> 8) & 0xff).to_byte())
+    let is_final = pos + block_size >= len
+    out[offset] = if is_final { b'\x01' } else { b'\x00' }
+    offset += 1
+    out[offset] = (block_size & 0xff).to_byte()
+    offset += 1
+    out[offset] = ((block_size >> 8) & 0xff).to_byte()
+    offset += 1
     let nlen = block_size ^ 0xffff
-    out.push((nlen & 0xff).to_byte())
-    out.push(((nlen >> 8) & 0xff).to_byte())
+    out[offset] = (nlen & 0xff).to_byte()
+    offset += 1
+    out[offset] = ((nlen >> 8) & 0xff).to_byte()
+    offset += 1
     for i = 0; i < block_size; i = i + 1 {
-      out.push(data[offset + i])
+      out[offset + i] = data[pos + i]
     }
     offset += block_size
+    pos += block_size
   }
   if len == 0 {
-    out.push(b'\x01')
-    out.push(b'\x00')
-    out.push(b'\x00')
-    out.push(b'\xff')
-    out.push(b'\xff')
+    out[offset] = b'\x01'
+    out[offset + 1] = b'\x00'
+    out[offset + 2] = b'\x00'
+    out[offset + 3] = b'\xff'
+    out[offset + 4] = b'\xff'
+    offset += 5
   }
+  offset
 }
 
 ///|
 /// Compress data using zlib stored blocks (no actual compression)
 /// Format: CMF(0x78) + FLG(0x01) + blocks + Adler32
 pub fn zlib_compress_stored(data : Bytes) -> Bytes {
-  let result : Array[Byte] = []
+  let deflate_len = stored_deflate_len(data.length())
+  let total_len = 2 + deflate_len + 4
+  let result : FixedArray[Byte] = FixedArray::make(total_len, b'\x00')
 
   // Zlib header: CMF=0x78 (deflate, 32K window), FLG=0x01 (fastest)
-  result.push(b'\x78')
-  result.push(b'\x01')
-  append_stored_deflate_blocks(result, data)
+  result[0] = b'\x78'
+  result[1] = b'\x01'
+  let offset = write_stored_deflate_blocks(result, 2, data)
 
   // Adler-32 checksum (big-endian)
   let checksum = adler32(data)
-  result.push(((checksum >> 24) & 0xff).to_byte())
-  result.push(((checksum >> 16) & 0xff).to_byte())
-  result.push(((checksum >> 8) & 0xff).to_byte())
-  result.push((checksum & 0xff).to_byte())
-  zlib_array_to_bytes(result)
+  write_u32_be(result, offset, checksum)
+  Bytes::from_array(result)
 }
 
 ///|
@@ -176,9 +195,10 @@ pub fn zlib_decompress_stored(data : Bytes) -> Bytes raise ZlibError {
 ///|
 /// Compress raw deflate stream using stored blocks (no compression).
 pub fn deflate_compress_stored(data : Bytes) -> Bytes {
-  let result : Array[Byte] = []
-  append_stored_deflate_blocks(result, data)
-  zlib_array_to_bytes(result)
+  let deflate_len = stored_deflate_len(data.length())
+  let result : FixedArray[Byte] = FixedArray::make(deflate_len, b'\x00')
+  let _ = write_stored_deflate_blocks(result, 0, data)
+  Bytes::from_array(result)
 }
 
 ///|
@@ -243,23 +263,25 @@ pub fn zlib_decompress_at(
 ///|
 /// Compress gzip stream using stored deflate blocks (no compression).
 pub fn gzip_compress_stored(data : Bytes) -> Bytes {
-  let out : Array[Byte] = []
-  out.push(b'\x1f')
-  out.push(b'\x8b')
-  out.push(b'\x08')
-  out.push(b'\x00')
-  out.push(b'\x00')
-  out.push(b'\x00')
-  out.push(b'\x00')
-  out.push(b'\x00')
-  out.push(b'\x00')
-  out.push(b'\xff')
-  append_stored_deflate_blocks(out, data)
+  let deflate_len = stored_deflate_len(data.length())
+  let total_len = 10 + deflate_len + 8
+  let out : FixedArray[Byte] = FixedArray::make(total_len, b'\x00')
+  out[0] = b'\x1f'
+  out[1] = b'\x8b'
+  out[2] = b'\x08'
+  out[3] = b'\x00'
+  out[4] = b'\x00'
+  out[5] = b'\x00'
+  out[6] = b'\x00'
+  out[7] = b'\x00'
+  out[8] = b'\x00'
+  out[9] = b'\xff'
+  let offset = write_stored_deflate_blocks(out, 10, data)
   let checksum = crc32(data)
-  push_u32_le(out, checksum)
+  write_u32_le(out, offset, checksum)
   let size = Int::reinterpret_as_uint(data.length())
-  push_u32_le(out, size)
-  zlib_array_to_bytes(out)
+  write_u32_le(out, offset + 4, size)
+  Bytes::from_array(out)
 }
 
 ///|
@@ -371,10 +393,18 @@ fn read_u32_le(data : Bytes, start : Int) -> UInt raise ZlibError {
 }
 
 ///|
-fn push_u32_le(out : Array[Byte], v : UInt) -> Unit {
+fn write_u32_be(out : FixedArray[Byte], offset : Int, v : Int) -> Unit {
+  out[offset] = ((v >> 24) & 0xff).to_byte()
+  out[offset + 1] = ((v >> 16) & 0xff).to_byte()
+  out[offset + 2] = ((v >> 8) & 0xff).to_byte()
+  out[offset + 3] = (v & 0xff).to_byte()
+}
+
+///|
+fn write_u32_le(out : FixedArray[Byte], offset : Int, v : UInt) -> Unit {
   let mask = Int::reinterpret_as_uint(255)
-  out.push((v & mask).to_byte())
-  out.push(((v >> 8) & mask).to_byte())
-  out.push(((v >> 16) & mask).to_byte())
-  out.push(((v >> 24) & mask).to_byte())
+  out[offset] = (v & mask).to_byte()
+  out[offset + 1] = ((v >> 8) & mask).to_byte()
+  out[offset + 2] = ((v >> 16) & mask).to_byte()
+  out[offset + 3] = ((v >> 24) & mask).to_byte()
 }
