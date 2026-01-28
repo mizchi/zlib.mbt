@@ -5,11 +5,22 @@ priv struct HuffmanTree {
   left : Array[Int]
   right : Array[Int]
   symbol : Array[Int]
+  table_bits : Int
+  table_symbol : FixedArray[Int]
+  table_len : FixedArray[Int]
 }
 
 ///|
-fn HuffmanTree::new() -> HuffmanTree {
-  { left: [-1], right: [-1], symbol: [-1] }
+fn HuffmanTree::new(table_bits : Int) -> HuffmanTree {
+  let size = if table_bits <= 0 { 0 } else { 1 << table_bits }
+  {
+    left: [-1],
+    right: [-1],
+    symbol: [-1],
+    table_bits,
+    table_symbol: FixedArray::make(size, -1),
+    table_len: FixedArray::make(size, 0),
+  }
 }
 
 ///|
@@ -58,6 +69,15 @@ fn HuffmanTree::decode(
   self : HuffmanTree,
   reader : BitReader,
 ) -> Int raise ZlibError {
+  if self.table_bits > 0 {
+    let bits = reader.peek_bits(self.table_bits)
+    let sym = self.table_symbol[bits]
+    if sym != -1 {
+      let len = self.table_len[bits]
+      reader.drop_bits(len)
+      return sym
+    }
+  }
   let mut node = 0
   while true {
     let bit = reader.read_bits(1)
@@ -99,7 +119,8 @@ fn build_huffman_tree(
     code = (code + bl_count[bits - 1]) << 1
     next_code[bits] = code
   }
-  let tree = HuffmanTree::new()
+  let table_bits = if max_bits > 9 { 9 } else { max_bits }
+  let tree = HuffmanTree::new(table_bits)
   for i = 0; i < lengths.length(); i = i + 1 {
     let len = lengths[i]
     if len > 0 {
@@ -107,6 +128,14 @@ fn build_huffman_tree(
       next_code[len] = next_code[len] + 1
       let rev = reverse_bits(c, len)
       tree.insert(rev, len, i)
+      if len <= table_bits {
+        let fill = 1 << (table_bits - len)
+        for j in 0..<fill {
+          let idx = rev | (j << len)
+          tree.table_symbol[idx] = i
+          tree.table_len[idx] = len
+        }
+      }
     }
   }
   tree

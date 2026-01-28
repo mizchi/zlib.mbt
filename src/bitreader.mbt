@@ -14,10 +14,7 @@ fn BitReader::new(data : Bytes, start : Int) -> BitReader {
 }
 
 ///|
-fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
-  if n == 0 {
-    return 0
-  }
+fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
   while self.bit_count < n {
     if self.byte_pos >= self.data.length() {
       raise ZlibError::InvalidData("Unexpected end of deflate stream")
@@ -27,10 +24,31 @@ fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
     self.bit_buf = self.bit_buf | (b << self.bit_count)
     self.bit_count = self.bit_count + 8
   }
+}
+
+///|
+fn BitReader::peek_bits(self : BitReader, n : Int) -> Int raise ZlibError {
+  if n == 0 {
+    return 0
+  }
+  self.ensure_bits(n)
   let mask = (1 << n) - 1
-  let result = self.bit_buf & mask
+  self.bit_buf & mask
+}
+
+///|
+fn BitReader::drop_bits(self : BitReader, n : Int) -> Unit {
+  if n == 0 {
+    return
+  }
   self.bit_buf = self.bit_buf >> n
   self.bit_count = self.bit_count - n
+}
+
+///|
+fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
+  let result = self.peek_bits(n)
+  self.drop_bits(n)
   result
 }
 

@@ -123,8 +123,13 @@ fn inflate_huffman_block(
       raise ZlibError::InvalidData("Invalid distance")
     }
     let start = output.length() - distance
-    for i = 0; i < length; i = i + 1 {
-      output.push(output[start + i])
+    let mut remaining = length
+    while remaining > 0 {
+      let chunk = if remaining > distance { distance } else { remaining }
+      for i in 0..<chunk {
+        output.push(output[start + i])
+      }
+      remaining -= chunk
     }
   }
 }
