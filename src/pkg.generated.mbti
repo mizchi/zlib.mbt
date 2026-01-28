@@ -6,6 +6,22 @@ pub fn adler32(Bytes) -> Int
 
 pub fn adler32_fixed(FixedArray[Byte]) -> Int
 
+pub fn crc32(Bytes) -> UInt
+
+pub fn crc32_fixed(FixedArray[Byte]) -> UInt
+
+pub fn deflate_compress_stored(Bytes) -> Bytes
+
+pub fn deflate_decompress(Bytes) -> Bytes raise ZlibError
+
+pub fn deflate_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+
+pub fn gzip_compress_stored(Bytes) -> Bytes
+
+pub fn gzip_decompress(Bytes) -> Bytes raise ZlibError
+
+pub fn gzip_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+
 pub fn zlib_compress_stored(Bytes) -> Bytes
 
 pub fn zlib_decompress(Bytes) -> Bytes raise ZlibError

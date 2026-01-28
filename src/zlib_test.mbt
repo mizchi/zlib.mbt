@@ -104,17 +104,39 @@ test "zlib decompress at offset" {
 test "zlib decompress deflate" {
   // zlib.deflateSync(Buffer.from("hello")).toString("hex")
   let hex = "789ccb48cdc9c90700062c0215"
-  let bytes : Array[Byte] = []
-  let chars = hex.to_array()
-  for i in 0..<(hex.length() / 2) {
-    let hi = hex_char_to_int(chars[i * 2])
-    let lo = hex_char_to_int(chars[i * 2 + 1])
-    bytes.push(((hi << 4) | lo).to_byte())
-  }
-  let compressed = Bytes::from_array(
-    FixedArray::makei(bytes.length(), fn(i) { bytes[i] }),
-  )
+  let compressed = hex_to_bytes(hex)
   let decompressed = zlib_decompress(compressed)
+  inspect(decompressed.length(), content="5")
+  inspect(decompressed[0], content="b'\\x68'")
+  inspect(decompressed[4], content="b'\\x6F'")
+}
+
+///|
+test "deflate round trip stored" {
+  let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
+  let compressed = deflate_compress_stored(data)
+  let decompressed = deflate_decompress(compressed)
+  inspect(decompressed.length(), content="5")
+  inspect(decompressed[0], content="b'\\x68'")
+  inspect(decompressed[4], content="b'\\x6F'")
+}
+
+///|
+test "gzip round trip stored" {
+  let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
+  let compressed = gzip_compress_stored(data)
+  let decompressed = gzip_decompress(compressed)
+  inspect(decompressed.length(), content="5")
+  inspect(decompressed[0], content="b'\\x68'")
+  inspect(decompressed[4], content="b'\\x6F'")
+}
+
+///|
+test "gzip decompress fixture" {
+  // python3: gzip.compress(b"hello").hex()
+  let hex = "1f8b08000000000000ffcb48cdc9c9070086a6103605000000"
+  let compressed = hex_to_bytes(hex)
+  let decompressed = gzip_decompress(compressed)
   inspect(decompressed.length(), content="5")
   inspect(decompressed[0], content="b'\\x68'")
   inspect(decompressed[4], content="b'\\x6F'")
@@ -131,4 +153,16 @@ fn hex_char_to_int(c : Char) -> Int {
   } else {
     0
   }
+}
+
+///|
+fn hex_to_bytes(hex : String) -> Bytes {
+  let bytes : Array[Byte] = []
+  let chars = hex.to_array()
+  for i in 0..<(hex.length() / 2) {
+    let hi = hex_char_to_int(chars[i * 2])
+    let lo = hex_char_to_int(chars[i * 2 + 1])
+    bytes.push(((hi << 4) | lo).to_byte())
+  }
+  Bytes::from_array(FixedArray::makei(bytes.length(), fn(i) { bytes[i] }))
 }

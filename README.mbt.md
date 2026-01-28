@@ -1,6 +1,9 @@
 # mizchi/zlib
 
-Pure MoonBit zlib/deflate implementation. Currently supports stored blocks and inflate helpers.
+Pure MoonBit zlib/deflate implementation. Supports:
+- zlib streams (compress stored / full inflate)
+- raw deflate (stored compress / full inflate)
+- gzip (stored compress / full inflate)
 
 ```mbt check
 ///|
