@@ -2,34 +2,26 @@
 
 ///|
 let deflate_length_base : FixedArray[Int] = [
-  3, 4, 5, 6, 7, 8, 9, 10,
-  11, 13, 15, 17, 19, 23, 27, 31,
-  35, 43, 51, 59, 67, 83, 99, 115,
-  131, 163, 195, 227, 258,
+  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83,
+  99, 115, 131, 163, 195, 227, 258,
 ]
 
 ///|
 let deflate_length_extra : FixedArray[Int] = [
-  0, 0, 0, 0, 0, 0, 0, 0,
-  1, 1, 1, 1, 2, 2, 2, 2,
-  3, 3, 3, 3, 4, 4, 4, 4,
-  5, 5, 5, 5, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5,
+  5, 0,
 ]
 
 ///|
 let deflate_dist_base : FixedArray[Int] = [
-  1, 2, 3, 4, 5, 7, 9, 13,
-  17, 25, 33, 49, 65, 97, 129, 193,
-  257, 385, 513, 769, 1025, 1537, 2049, 3073,
-  4097, 6145, 8193, 12289, 16385, 24577,
+  1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
+  1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
 ]
 
 ///|
 let deflate_dist_extra : FixedArray[Int] = [
-  0, 0, 0, 0, 1, 1, 2, 2,
-  3, 3, 4, 4, 5, 5, 6, 6,
-  7, 7, 8, 8, 9, 9, 10, 10,
-  11, 11, 12, 12, 13, 13,
+  0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+  12, 12, 13, 13,
 ]
 
 ///|
@@ -186,7 +178,6 @@ fn build_tokens(data : Bytes) -> Array[DeflateToken] {
   let len = data.length()
   let head : FixedArray[Int] = FixedArray::make(hash_size, -1)
   let prev : FixedArray[Int] = FixedArray::make(len, -1)
-
   let mut pos = 0
   while pos < len {
     let remaining = len - pos
@@ -196,15 +187,18 @@ fn build_tokens(data : Bytes) -> Array[DeflateToken] {
       let h = hash3(data, pos)
       let mut candidate = head[h]
       let limit = if pos > window_size { pos - window_size } else { 0 }
-      let max_len = if remaining < max_match_len { remaining } else { max_match_len }
+      let max_len = if remaining < max_match_len {
+        remaining
+      } else {
+        max_match_len
+      }
       let mut chain = 0
       while candidate >= limit && chain < max_chain {
         if data[candidate] == data[pos] &&
-           data[candidate + 1] == data[pos + 1] &&
-           data[candidate + 2] == data[pos + 2] {
+          data[candidate + 1] == data[pos + 1] &&
+          data[candidate + 2] == data[pos + 2] {
           let mut l = min_match_len
-          while l < max_len &&
-                data[candidate + l] == data[pos + l] {
+          while l < max_len && data[candidate + l] == data[pos + l] {
             l += 1
           }
           if l > best_len {
@@ -219,7 +213,6 @@ fn build_tokens(data : Bytes) -> Array[DeflateToken] {
         chain += 1
       }
     }
-
     if best_len >= min_match_len {
       tokens.push(Match(len=best_len, dist=best_dist))
       for i = 0; i < best_len; i = i + 1 {
@@ -336,7 +329,7 @@ fn build_canonical_codes(
   }
   let next_code : Array[Int] = Array::make(max_bits + 1, 0)
   let mut code = 0
-  for bits in 1..=max_bits {
+  for bits in 1..<=max_bits {
     code = (code + bl_count[bits - 1]) << 1
     next_code[bits] = code
   }
@@ -438,9 +431,7 @@ fn deflate_compress_dynamic(data : Bytes) -> Bytes? {
   let dist_freq : Array[Int] = Array::make(30, 0)
   for t in tokens {
     match t {
-      Lit(sym) => {
-        lit_freq[sym] = lit_freq[sym] + 1
-      }
+      Lit(sym) => lit_freq[sym] = lit_freq[sym] + 1
       Match(len~, dist~) => {
         let (len_code, _, _) = length_code_info(len)
         let (dist_code, _, _) = dist_code_info(dist)
@@ -470,7 +461,6 @@ fn deflate_compress_dynamic(data : Bytes) -> Bytes? {
   }
   let lit_codes = build_canonical_codes(lit_lengths, 15)
   let dist_codes = build_canonical_codes(dist_lengths, 15)
-
   let mut hlit = 286
   while hlit > 257 && lit_lengths[hlit - 1] == 0 {
     hlit -= 1
@@ -496,10 +486,8 @@ fn deflate_compress_dynamic(data : Bytes) -> Bytes? {
     Some(v) => v
   }
   let cl_codes = build_canonical_codes(cl_lengths, 7)
-
   let order : FixedArray[Int] = [
-    16, 17, 18, 0, 8, 7, 9, 6, 10, 5,
-    11, 4, 12, 3, 13, 2, 14, 1, 15,
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
   ]
   let mut hclen = 4
   for i in 0..<order.length() {
@@ -507,14 +495,12 @@ fn deflate_compress_dynamic(data : Bytes) -> Bytes? {
       hclen = i + 1
     }
   }
-
   let writer = BitWriter::new()
   writer.write_bits(1, 1)
   writer.write_bits(2, 2)
   writer.write_bits(hlit - 257, 5)
   writer.write_bits(hdist - 1, 5)
   writer.write_bits(hclen - 4, 4)
-
   for i in 0..<hclen {
     writer.write_bits(cl_lengths[order[i]], 3)
   }
@@ -535,10 +521,8 @@ pub fn deflate_compress_fixed(data : Bytes) -> Bytes {
   // BFINAL=1, BTYPE=01 (fixed Huffman)
   writer.write_bits(1, 1)
   writer.write_bits(1, 2)
-
   let tokens = build_tokens(data)
   write_tokens_fixed(tokens, writer)
-
   write_end_block(writer)
   writer.finish()
 }
