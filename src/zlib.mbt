@@ -95,6 +95,22 @@ pub fn zlib_compress_stored(data : Bytes) -> Bytes {
 }
 
 ///|
+/// Compress data using zlib (fixed Huffman).
+pub fn zlib_compress(data : Bytes) -> Bytes {
+  let deflated = deflate_compress(data)
+  let total_len = 2 + deflated.length() + 4
+  let result : FixedArray[Byte] = FixedArray::make(total_len, b'\x00')
+  result[0] = b'\x78'
+  result[1] = b'\x01'
+  for i = 0; i < deflated.length(); i = i + 1 {
+    result[2 + i] = deflated[i]
+  }
+  let checksum = adler32(data)
+  write_u32_be(result, 2 + deflated.length(), checksum)
+  Bytes::from_array(result)
+}
+
+///|
 /// Decompress zlib stored blocks from the given offset.
 /// Returns (decompressed_bytes, next_offset).
 pub fn zlib_decompress_stored_at(
@@ -199,6 +215,12 @@ pub fn deflate_compress_stored(data : Bytes) -> Bytes {
   let result : FixedArray[Byte] = FixedArray::make(deflate_len, b'\x00')
   let _ = write_stored_deflate_blocks(result, 0, data)
   Bytes::from_array(result)
+}
+
+///|
+/// Compress raw deflate stream (fixed Huffman).
+pub fn deflate_compress(data : Bytes) -> Bytes {
+  deflate_compress_best(data)
 }
 
 ///|

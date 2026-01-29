@@ -35,6 +35,16 @@ test "zlib round trip simple" {
 }
 
 ///|
+test "zlib round trip fixed" {
+  let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
+  let compressed = zlib_compress(data)
+  let decompressed = zlib_decompress(compressed)
+  inspect(decompressed.length(), content="5")
+  inspect(decompressed[0], content="b'\\x68'")
+  inspect(decompressed[4], content="b'\\x6F'")
+}
+
+///|
 test "zlib round trip larger" {
   // Test with data larger than comfort but smaller than block limit
   let data : Array[Byte] = []
@@ -115,6 +125,16 @@ test "zlib decompress deflate" {
 test "deflate round trip stored" {
   let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
   let compressed = deflate_compress_stored(data)
+  let decompressed = deflate_decompress(compressed)
+  inspect(decompressed.length(), content="5")
+  inspect(decompressed[0], content="b'\\x68'")
+  inspect(decompressed[4], content="b'\\x6F'")
+}
+
+///|
+test "deflate round trip fixed" {
+  let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
+  let compressed = deflate_compress(data)
   let decompressed = deflate_decompress(compressed)
   inspect(decompressed.length(), content="5")
   inspect(decompressed[0], content="b'\\x68'")

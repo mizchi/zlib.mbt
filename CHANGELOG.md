@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-01-29
+
+### Added
+- Deflate compression (fixed Huffman + LZ77).
+- Dynamic Huffman encoding with code-length RLE.
+- `deflate_compress`/`zlib_compress` now produce compressed output and select the smaller of fixed/dynamic blocks.
+
 ## [0.2.0] - 2026-01-28
 
 ### Added
