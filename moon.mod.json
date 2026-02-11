@@ -2,7 +2,7 @@
   "name": "mizchi/zlib",
   "version": "0.3.0",
   "deps": {
-    "moonbitlang/x": "0.4.38"
+    "moonbitlang/x": "0.4.40"
   },
   "readme": "README.mbt.md",
   "repository": "https://github.com/mizchi/zlib.mbt",
