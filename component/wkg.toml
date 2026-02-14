@@ -1,0 +1,6 @@
+version = "0.1.0"
+
+[metadata]
+description = "Pure MoonBit zlib/deflate/gzip implementation as a WebAssembly Component"
+license = "Apache-2.0"
+repository = "https://github.com/mizchi/zlib"

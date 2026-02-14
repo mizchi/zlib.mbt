@@ -1,0 +1,45 @@
+set dotenv-load
+
+export MOON_COMPONENT_CODEGEN_ROOT := env("MOON_COMPONENT_CODEGEN_ROOT", `echo $HOME` + "/ghq/github.com/mizchi/moon-component")
+
+default: build
+
+# Generate bindings from WIT
+generate:
+  moon-component generate wit/world.wit -p zlib-component -o . --pkg-format json
+
+# Type check
+check:
+  moon check --target wasm
+
+# Build core wasm
+build: check
+  moon build --target wasm --release
+
+# Componentize
+componentize: build
+  moon-component componentize _build/wasm/release/build/impl/impl.wasm \
+    --wit-dir wit -o zlib.component.wasm
+
+# Optimize with wite
+optimize: componentize
+  wite optimize zlib.component.wasm zlib.min.wasm --kind=component -Oz
+
+# Analyze component
+analyze: componentize
+  wite analyze component zlib.component.wasm
+
+# Verify WIT interface
+verify: componentize
+  wasm-tools component wit zlib.component.wasm
+
+# Full pipeline: generate → build → componentize → optimize → analyze
+all: generate build componentize optimize analyze
+
+# Publish to wa.dev
+publish: optimize
+  wkg publish zlib.min.wasm --registry wa.dev --package "mizchi:zlib@0.1.0"
+
+# Clean build artifacts
+clean:
+  rm -rf _build zlib.component.wasm zlib.min.wasm

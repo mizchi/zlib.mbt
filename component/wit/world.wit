@@ -1,0 +1,14 @@
+package mizchi:zlib@0.1.0;
+
+interface compress {
+  deflate-compress: func(data: list<u8>) -> list<u8>;
+  deflate-decompress: func(data: list<u8>) -> result<list<u8>, string>;
+  zlib-compress: func(data: list<u8>) -> list<u8>;
+  zlib-decompress: func(data: list<u8>) -> result<list<u8>, string>;
+  gzip-compress-stored: func(data: list<u8>) -> list<u8>;
+  gzip-decompress: func(data: list<u8>) -> result<list<u8>, string>;
+}
+
+world zlib {
+  export compress;
+}

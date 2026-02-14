@@ -1,0 +1,33 @@
+{
+  "is-main": true,
+  "import": [
+    { "path": "zlib-component/gen/cabi", "alias": "cabi" },
+    { "path": "mizchi/zlib", "alias": "zlib" }
+  ],
+  "link": {
+    "wasm": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportDeflateCompress:mizchi:zlib/compress@0.1.0#deflate-compress",
+        "wasmExportDeflateDecompress:mizchi:zlib/compress@0.1.0#deflate-decompress",
+        "wasmExportGzipCompressStored:mizchi:zlib/compress@0.1.0#gzip-compress-stored",
+        "wasmExportGzipDecompress:mizchi:zlib/compress@0.1.0#gzip-decompress",
+        "wasmExportZlibCompress:mizchi:zlib/compress@0.1.0#zlib-compress",
+        "wasmExportZlibDecompress:mizchi:zlib/compress@0.1.0#zlib-decompress"
+      ],
+      "export-memory-name": "memory"
+    },
+    "wasm-gc": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportDeflateCompress:mizchi:zlib/compress@0.1.0#deflate-compress",
+        "wasmExportDeflateDecompress:mizchi:zlib/compress@0.1.0#deflate-decompress",
+        "wasmExportGzipCompressStored:mizchi:zlib/compress@0.1.0#gzip-compress-stored",
+        "wasmExportGzipDecompress:mizchi:zlib/compress@0.1.0#gzip-decompress",
+        "wasmExportZlibCompress:mizchi:zlib/compress@0.1.0#zlib-compress",
+        "wasmExportZlibDecompress:mizchi:zlib/compress@0.1.0#zlib-decompress"
+      ],
+      "export-memory-name": "memory"
+    }
+  }
+}
