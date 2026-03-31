@@ -18,6 +18,12 @@ fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
   while self.bit_count < n {
     let remaining = self.data.length() - self.byte_pos
     if remaining <= 0 {
+      // Allow zero-padding when some bits are still buffered.
+      // This is needed for table-based Huffman lookups that peek
+      // more bits than the actual code length at stream end.
+      if self.bit_count > 0 {
+        break
+      }
       raise ZlibError::InvalidData("Unexpected end of deflate stream")
     }
     // Batch 4 bytes when possible to reduce loop overhead in hot paths.

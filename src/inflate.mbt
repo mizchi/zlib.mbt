@@ -49,7 +49,7 @@ fn inflate_blocks(
   output : Array[Byte],
 ) -> Unit raise ZlibError {
   let mut is_final = false
-  while not(is_final) {
+  while !is_final {
     let bfinal = reader.read_bits(1)
     let btype = reader.read_bits(2)
     if btype == 0 {

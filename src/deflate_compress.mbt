@@ -448,7 +448,7 @@ fn deflate_compress_dynamic(data : Bytes) -> Bytes? {
       break
     }
   }
-  if not(any_dist) {
+  if !any_dist {
     dist_freq[0] = 1
   }
   let lit_lengths = match build_huffman_lengths(lit_freq, 15) {

@@ -2,3 +2,12 @@ import {
   "moonbitlang/core/bench",
   "moonbitlang/x/fs",
 }
+
+options(
+  link: { "native": { "cc-link-flags": "-lz" } },
+  "native-stub": [ "zlib_impl_native.c" ],
+  targets: {
+    "zlib_impl_js.mbt": [ "js", "wasm", "wasm-gc" ],
+    "zlib_impl_native.mbt": [ "native", "llvm" ],
+  },
+)

@@ -38,5 +38,9 @@ info:
 clean:
     moon clean
 
+# Cross-verify against native zlib
+cross-verify:
+    node scripts/cross_verify.mjs
+
 # Pre-release check
 release-check: fmt info check test

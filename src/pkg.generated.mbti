@@ -22,6 +22,8 @@ pub fn deflate_decompress(Bytes) -> Bytes raise ZlibError
 
 pub fn deflate_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
 
+pub fn gzip_compress(Bytes) -> Bytes
+
 pub fn gzip_compress_stored(Bytes) -> Bytes
 
 pub fn gzip_decompress(Bytes) -> Bytes raise ZlibError
@@ -43,9 +45,7 @@ pub fn zlib_decompress_stored_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
 // Errors
 pub(all) suberror ZlibError {
   InvalidData(String)
-}
-pub impl Eq for ZlibError
-pub impl Show for ZlibError
+} derive(Eq, Show)
 
 // Types and methods
 
