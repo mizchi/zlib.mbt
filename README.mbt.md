@@ -17,6 +17,18 @@ test "roundtrip stored" {
 }
 ```
 
+## Native target
+
+On the native target, this library uses system zlib via C FFI for better performance. Dependents need to add `-lz` to their `moon.pkg`:
+
+```
+options(
+  link: { "native": { "cc-link-flags": "-lz" } },
+)
+```
+
+On js/wasm/wasm-gc targets, the pure MoonBit implementation is used and no system libraries are required.
+
 ```bash
 # Benchmarks
 moon bench --target js

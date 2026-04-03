@@ -1,6 +1,6 @@
 {
   "name": "mizchi/zlib",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "deps": {
     "moonbitlang/x": "0.4.40",
     "moonbitlang/async": "0.16.6"
