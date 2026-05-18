@@ -212,6 +212,116 @@ test "gzip decompress dynamic fixture" {
 }
 
 ///|
+test "zlib decompress respects max_size limit" {
+  // "hello" compressed with fixed Huffman; expands to 5 bytes.
+  let hex = "789ccb48cdc9c90700062c0215"
+  let compressed = hex_to_bytes(hex)
+  // max_size=4 must reject (output would be 5 bytes).
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
+    compressed,
+    max_size=4,
+  )
+  match r {
+    Err(OutputTooLarge(_)) => ()
+    Err(other) => fail("expected OutputTooLarge, got \{other}")
+    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  }
+  // max_size=5 must accept.
+  let ok = zlib_decompress(compressed, max_size=5)
+  inspect(ok.length(), content="5")
+}
+
+///|
+test "gzip decompress respects max_size limit" {
+  // gzip-compressed "hello" (10 bytes header + deflate + 8 trailer).
+  let hex = "1f8b08000000000000ffcb48cdc9c9070086a6103605000000"
+  let compressed = hex_to_bytes(hex)
+  let r : Result[Bytes, ZlibError] = try? gzip_decompress(
+    compressed,
+    max_size=4,
+  )
+  match r {
+    Err(OutputTooLarge(_)) => ()
+    Err(other) => fail("expected OutputTooLarge, got \{other}")
+    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  }
+}
+
+///|
+test "deflate decompress rejects zip-bomb-like expansion" {
+  // A tiny deflate stream that expands to many KB via back-references.
+  // Build a stream by compressing 50000 zero bytes, then decompress with
+  // a small max_size to verify the OOM guard fires.
+  let zeros : Array[Byte] = []
+  for _ in 0..<50000 {
+    zeros.push(b'\x00')
+  }
+  let bytes = Bytes::from_array(
+    FixedArray::makei(zeros.length(), fn(i) { zeros[i] }),
+  )
+  let compressed = deflate_compress(bytes)
+  // Compressed should be much smaller than the expanded payload.
+  assert_true(compressed.length() < 1000)
+  // Decompressing with max_size below 50000 must fail with OutputTooLarge.
+  let r : Result[Bytes, ZlibError] = try? deflate_decompress(
+    compressed,
+    max_size=1024,
+  )
+  match r {
+    Err(OutputTooLarge(_)) => ()
+    Err(other) => fail("expected OutputTooLarge, got \{other}")
+    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  }
+  // With a generous max_size it should succeed.
+  let ok = deflate_decompress(compressed, max_size=50000)
+  inspect(ok.length(), content="50000")
+}
+
+///|
+test "zlib stored decompress respects max_size limit" {
+  let data = Bytes::from_array([b'a', b'b', b'c', b'd', b'e'])
+  let compressed = zlib_compress_stored(data)
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress_stored(
+    compressed,
+    max_size=4,
+  )
+  match r {
+    Err(OutputTooLarge(_)) => ()
+    Err(other) => fail("expected OutputTooLarge, got \{other}")
+    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  }
+}
+
+///|
+test "zlib decompress accepts non-0x78 CMF" {
+  // CMF=0x18 (CINFO=1, window=512 bytes), FLG chosen so the header
+  // checksum is valid and is fastest-no-dict.
+  // We construct: stored block of "hi" + adler32.
+  // Simpler: build it via our writer then patch CMF/FLG by hand.
+  let data = Bytes::from_array([b'h', b'i'])
+  let compressed = zlib_compress_stored(data)
+  // Original header is 0x78 0x01. Patch to 0x18 0x?? satisfying %31==0.
+  // (0x18*256 + FLG) % 31 == 0 → FLG = 31 - (0x1800 % 31) % 31.
+  let cmf = 0x18
+  let mut flg = 0
+  while (cmf * 256 + flg) % 31 != 0 {
+    flg += 1
+  }
+  let arr : Array[Byte] = []
+  arr.push(cmf.to_byte())
+  arr.push(flg.to_byte())
+  for i = 2; i < compressed.length(); i = i + 1 {
+    arr.push(compressed[i])
+  }
+  let patched = Bytes::from_array(
+    FixedArray::makei(arr.length(), fn(i) { arr[i] }),
+  )
+  // Must accept the non-0x78 CMF (was previously rejected).
+  let out = zlib_decompress_stored(patched)
+  inspect(out.length(), content="2")
+}
+
+///|
 test "fixture loader hex roundtrip" {
   let bytes = Bytes::from_array([b'\x00', b'\x01', b'\xff'])
   let hex = bytes_to_hex(bytes)

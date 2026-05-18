@@ -19,9 +19,13 @@ pub fn zlib_compress(data : Bytes) -> Bytes {
 ///|
 /// Decompress a zlib stream (deflate with checksum) from the given offset.
 /// Returns (decompressed_bytes, next_offset).
+///
+/// Output is capped at `max_size` bytes; if exceeded, raises
+/// `OutputTooLarge`.
 pub fn zlib_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
   if start < 0 || start + 2 > data.length() {
     raise ZlibError::InvalidData("Zlib data too short")
@@ -39,7 +43,7 @@ pub fn zlib_decompress_at(
     raise ZlibError::InvalidData("Preset dictionary not supported")
   }
   let deflate_start = start + 2
-  let (result, offset) = inflate_deflate_stream(data, deflate_start)
+  let (result, offset) = inflate_deflate_stream(data, deflate_start, max_size)
   if offset + 4 > data.length() {
     raise ZlibError::InvalidData("Missing Adler-32 checksum")
   }
@@ -58,8 +62,11 @@ pub fn zlib_decompress_at(
 
 ///|
 /// Decompress a full zlib stream.
-pub fn zlib_decompress(data : Bytes) -> Bytes raise ZlibError {
-  let (result, offset) = zlib_decompress_at(data, 0)
+pub fn zlib_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  let (result, offset) = zlib_decompress_at(data, 0, max_size~)
   if offset != data.length() {
     raise ZlibError::InvalidData("Trailing data after zlib stream")
   }
@@ -77,14 +84,18 @@ pub fn deflate_compress(data : Bytes) -> Bytes {
 pub fn deflate_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
-  inflate_deflate_stream(data, start)
+  inflate_deflate_stream(data, start, max_size)
 }
 
 ///|
 /// Decompress a full raw deflate stream.
-pub fn deflate_decompress(data : Bytes) -> Bytes raise ZlibError {
-  let (result, offset) = deflate_decompress_at(data, 0)
+pub fn deflate_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  let (result, offset) = deflate_decompress_at(data, 0, max_size~)
   if offset != data.length() {
     raise ZlibError::InvalidData("Trailing data after deflate stream")
   }
@@ -102,6 +113,7 @@ pub fn gzip_compress(data : Bytes) -> Bytes {
 pub fn gzip_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
   if start < 0 || start + 10 > data.length() {
     raise ZlibError::InvalidData("Gzip data too short")
@@ -146,7 +158,7 @@ pub fn gzip_decompress_at(
     }
     offset += 2
   }
-  let (result, end_offset) = inflate_deflate_stream(data, offset)
+  let (result, end_offset) = inflate_deflate_stream(data, offset, max_size)
   if end_offset + 8 > data.length() {
     raise ZlibError::InvalidData("Missing gzip trailer")
   }
@@ -165,8 +177,11 @@ pub fn gzip_decompress_at(
 
 ///|
 /// Decompress a full gzip stream.
-pub fn gzip_decompress(data : Bytes) -> Bytes raise ZlibError {
-  let (result, offset) = gzip_decompress_at(data, 0)
+pub fn gzip_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  let (result, offset) = gzip_decompress_at(data, 0, max_size~)
   if offset != data.length() {
     raise ZlibError::InvalidData("Trailing data after gzip stream")
   }

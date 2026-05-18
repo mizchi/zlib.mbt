@@ -35,10 +35,14 @@ fn bytes_from_array(arr : Array[Byte]) -> Bytes {
 fn inflate_deflate_stream(
   data : Bytes,
   start : Int,
+  max_size : Int,
 ) -> (Bytes, Int) raise ZlibError {
+  if max_size < 0 {
+    raise ZlibError::InvalidData("max_size must be non-negative")
+  }
   let reader = BitReader::new(data, start)
   let output : Array[Byte] = []
-  inflate_blocks(reader, output)
+  inflate_blocks(reader, output, max_size)
   reader.align_byte()
   (bytes_from_array(output), reader.offset())
 }
@@ -47,19 +51,20 @@ fn inflate_deflate_stream(
 fn inflate_blocks(
   reader : BitReader,
   output : Array[Byte],
+  max_size : Int,
 ) -> Unit raise ZlibError {
   let mut is_final = false
   while !is_final {
     let bfinal = reader.read_bits(1)
     let btype = reader.read_bits(2)
     if btype == 0 {
-      inflate_stored_block(reader, output)
+      inflate_stored_block(reader, output, max_size)
     } else if btype == 1 {
       let (lit_tree, dist_tree) = build_fixed_trees()
-      inflate_huffman_block(reader, output, lit_tree, dist_tree)
+      inflate_huffman_block(reader, output, lit_tree, dist_tree, max_size)
     } else if btype == 2 {
       let (lit_tree, dist_tree) = build_dynamic_trees(reader)
-      inflate_huffman_block(reader, output, lit_tree, dist_tree)
+      inflate_huffman_block(reader, output, lit_tree, dist_tree, max_size)
     } else {
       raise ZlibError::InvalidData("Invalid deflate block type")
     }
@@ -73,12 +78,18 @@ fn inflate_blocks(
 fn inflate_stored_block(
   reader : BitReader,
   output : Array[Byte],
+  max_size : Int,
 ) -> Unit raise ZlibError {
   reader.align_byte()
   let len = reader.read_u16_le_aligned()
   let nlen = reader.read_u16_le_aligned()
   if (len ^ nlen) != 0xffff {
     raise ZlibError::InvalidData("Invalid stored block length")
+  }
+  if output.length() + len > max_size {
+    raise ZlibError::OutputTooLarge(
+      "Decompressed output exceeds max_size=\{max_size}",
+    )
   }
   reader.read_bytes_aligned(output, len)
 }
@@ -89,8 +100,17 @@ fn inflate_huffman_block(
   output : Array[Byte],
   lit_tree : HuffmanTree,
   dist_tree : HuffmanTree,
+  max_size : Int,
 ) -> Unit raise ZlibError {
   while true {
+    // Hard cap on output growth. Each iteration appends at most 258
+    // bytes (a max-length back-reference), so a single check here
+    // bounds total memory use.
+    if output.length() > max_size {
+      raise ZlibError::OutputTooLarge(
+        "Decompressed output exceeds max_size=\{max_size}",
+      )
+    }
     let sym = lit_tree.decode(reader)
     if sym < 256 {
       output.push(sym.to_byte())
@@ -121,6 +141,11 @@ fn inflate_huffman_block(
     let distance = base_dist + dist_extra_val
     if distance <= 0 || distance > output.length() {
       raise ZlibError::InvalidData("Invalid distance")
+    }
+    if output.length() + length > max_size {
+      raise ZlibError::OutputTooLarge(
+        "Decompressed output exceeds max_size=\{max_size}",
+      )
     }
     let start = output.length() - distance
     let mut remaining = length
@@ -179,28 +204,46 @@ fn build_dynamic_trees(
   let total = hlit + hdist
   let lengths : Array[Int] = []
   let mut prev = 0
+  let mut has_prev = false
   while lengths.length() < total {
     let sym = code_len_tree.decode(reader)
     if sym <= 15 {
       lengths.push(sym)
       prev = sym
+      has_prev = true
     } else if sym == 16 {
+      // RFC 1951: 16 means "repeat the previous code length 3-6 times".
+      // It is invalid as the first code length in the sequence.
+      if !has_prev {
+        raise ZlibError::InvalidData("Code length 16 with no previous length")
+      }
       let repeat = reader.read_bits(2) + 3
+      if lengths.length() + repeat > total {
+        raise ZlibError::InvalidData("Code length repeat overflows table")
+      }
       for _ in 0..<repeat {
         lengths.push(prev)
       }
     } else if sym == 17 {
       let repeat = reader.read_bits(3) + 3
+      if lengths.length() + repeat > total {
+        raise ZlibError::InvalidData("Code length repeat overflows table")
+      }
       for _ in 0..<repeat {
         lengths.push(0)
       }
       prev = 0
+      has_prev = true
     } else if sym == 18 {
       let repeat = reader.read_bits(7) + 11
+      if lengths.length() + repeat > total {
+        raise ZlibError::InvalidData("Code length repeat overflows table")
+      }
       for _ in 0..<repeat {
         lengths.push(0)
       }
       prev = 0
+      has_prev = true
     } else {
       raise ZlibError::InvalidData("Invalid code length symbol")
     }

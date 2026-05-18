@@ -1,10 +1,34 @@
 ///| Zlib stored blocks implementation (no compression)
 
 ///|
-/// Errors raised by zlib helpers
+/// Errors raised by zlib helpers.
+///
+/// `InvalidData` covers malformed inputs (bad headers, checksum mismatches,
+/// truncated streams, invalid Huffman codes, etc.).
+///
+/// `OutputTooLarge` is raised when decompressed output would exceed the
+/// configured `max_size`. Decompression APIs accept a `max_size~` labeled
+/// argument; the default is `default_max_decompressed_size` (256 MiB).
 pub(all) suberror ZlibError {
   InvalidData(String)
-} derive(Show, Eq)
+  OutputTooLarge(String)
+} derive(Eq)
+
+///|
+pub impl Show for ZlibError with output(self, logger) {
+  match self {
+    InvalidData(msg) => logger.write_string("InvalidData(\{msg})")
+    OutputTooLarge(msg) => logger.write_string("OutputTooLarge(\{msg})")
+  }
+}
+
+///|
+/// Default maximum decompressed output size (256 MiB).
+///
+/// All public decompression functions enforce this by default to prevent
+/// "zip bomb" style DoS where a tiny crafted input decompresses to
+/// gigabytes of memory. Override via the `max_size~` labeled argument.
+pub let default_max_decompressed_size : Int = 256 * 1024 * 1024
 
 ///| Git servers accept uncompressed deflate data
 
@@ -97,23 +121,36 @@ pub fn zlib_compress_stored(data : Bytes) -> Bytes {
 ///|
 /// Decompress zlib stored blocks from the given offset.
 /// Returns (decompressed_bytes, next_offset).
+///
+/// Output is capped at `max_size` bytes; if exceeded, raises
+/// `OutputTooLarge` rather than allowing unbounded allocation.
 pub fn zlib_decompress_stored_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
+  if max_size < 0 {
+    raise ZlibError::InvalidData("max_size must be non-negative")
+  }
   if start < 0 || start + 2 > data.length() {
     raise ZlibError::InvalidData("Zlib data too short")
   }
 
-  // Verify zlib header
+  // Verify zlib header. CM must be 8 (deflate); other CINFO values are valid.
   let cmf = data[start].to_int()
   let flg = data[start + 1].to_int()
-  if cmf != 0x78 {
-    raise ZlibError::InvalidData("Invalid zlib CMF: \{cmf}")
+  if (cmf & 0x0f) != 8 {
+    raise ZlibError::InvalidData(
+      "Unsupported compression method: \{cmf & 0x0f}",
+    )
   }
   // FLG should make (CMF * 256 + FLG) % 31 == 0
   if (cmf * 256 + flg) % 31 != 0 {
     raise ZlibError::InvalidData("Invalid zlib FLG checksum")
+  }
+  // Reject preset dictionary (we do not support it)
+  if ((flg >> 5) & 1) == 1 {
+    raise ZlibError::InvalidData("Preset dictionary not supported")
   }
   let result : Array[Byte] = []
   let mut offset = start + 2
@@ -153,6 +190,11 @@ pub fn zlib_decompress_stored_at(
     if offset + block_len > data.length() {
       raise ZlibError::InvalidData("Unexpected end of stored block data")
     }
+    if result.length() + block_len > max_size {
+      raise ZlibError::OutputTooLarge(
+        "Decompressed output exceeds max_size=\{max_size}",
+      )
+    }
     // Copy raw data
     for i = 0; i < block_len; i = i + 1 {
       result.push(data[offset])
@@ -184,8 +226,11 @@ pub fn zlib_decompress_stored_at(
 
 ///|
 /// Decompress zlib stored blocks (single stream)
-pub fn zlib_decompress_stored(data : Bytes) -> Bytes raise ZlibError {
-  let (result, offset) = zlib_decompress_stored_at(data, 0)
+pub fn zlib_decompress_stored(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  let (result, offset) = zlib_decompress_stored_at(data, 0, max_size~)
   if offset != data.length() {
     raise ZlibError::InvalidData("Trailing data after zlib stream")
   }

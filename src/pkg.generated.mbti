@@ -10,6 +10,8 @@ pub fn crc32(Bytes) -> UInt
 
 pub fn crc32_fixed(FixedArray[Byte]) -> UInt
 
+pub let default_max_decompressed_size : Int
+
 pub fn deflate_compress(Bytes) -> Bytes
 
 pub fn deflate_compress_best(Bytes) -> Bytes
@@ -18,34 +20,36 @@ pub fn deflate_compress_fixed(Bytes) -> Bytes
 
 pub fn deflate_compress_stored(Bytes) -> Bytes
 
-pub fn deflate_decompress(Bytes) -> Bytes raise ZlibError
+pub fn deflate_decompress(Bytes, max_size? : Int) -> Bytes raise ZlibError
 
-pub fn deflate_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+pub fn deflate_decompress_at(Bytes, Int, max_size? : Int) -> (Bytes, Int) raise ZlibError
 
 pub fn gzip_compress(Bytes) -> Bytes
 
 pub fn gzip_compress_stored(Bytes) -> Bytes
 
-pub fn gzip_decompress(Bytes) -> Bytes raise ZlibError
+pub fn gzip_decompress(Bytes, max_size? : Int) -> Bytes raise ZlibError
 
-pub fn gzip_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+pub fn gzip_decompress_at(Bytes, Int, max_size? : Int) -> (Bytes, Int) raise ZlibError
 
 pub fn zlib_compress(Bytes) -> Bytes
 
 pub fn zlib_compress_stored(Bytes) -> Bytes
 
-pub fn zlib_decompress(Bytes) -> Bytes raise ZlibError
+pub fn zlib_decompress(Bytes, max_size? : Int) -> Bytes raise ZlibError
 
-pub fn zlib_decompress_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+pub fn zlib_decompress_at(Bytes, Int, max_size? : Int) -> (Bytes, Int) raise ZlibError
 
-pub fn zlib_decompress_stored(Bytes) -> Bytes raise ZlibError
+pub fn zlib_decompress_stored(Bytes, max_size? : Int) -> Bytes raise ZlibError
 
-pub fn zlib_decompress_stored_at(Bytes, Int) -> (Bytes, Int) raise ZlibError
+pub fn zlib_decompress_stored_at(Bytes, Int, max_size? : Int) -> (Bytes, Int) raise ZlibError
 
 // Errors
 pub(all) suberror ZlibError {
   InvalidData(String)
-} derive(Eq, Show)
+  OutputTooLarge(String)
+} derive(Eq)
+pub impl Show for ZlibError
 
 // Types and methods
 
