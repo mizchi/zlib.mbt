@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/zlib/native"
+
+import {
+  "mizchi/zlib",
+}
+
+// Values
+pub fn deflate_compress(Bytes) -> Bytes
+
+pub fn deflate_decompress(Bytes) -> Bytes raise @zlib.ZlibError
+
+pub fn deflate_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+
+pub fn gzip_compress(Bytes) -> Bytes
+
+pub fn gzip_decompress(Bytes) -> Bytes raise @zlib.ZlibError
+
+pub fn gzip_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+
+pub fn zlib_compress(Bytes) -> Bytes
+
+pub fn zlib_decompress(Bytes) -> Bytes raise @zlib.ZlibError
+
+pub fn zlib_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @zlib {type ZlibError}
+
+// Traits
+
