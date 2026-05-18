@@ -77,10 +77,23 @@ fn main {
     usage()
     @sys.exit(1)
   }
-  let input = try! @fs.read_file_to_bytes(input_path)
+  let input_r : Result[Bytes, _] = try? @fs.read_file_to_bytes(input_path)
+  guard input_r is Ok(input) else {
+    println("Error: failed to read \{input_path}")
+    @sys.exit(1)
+  }
   let output = match mode {
     Compress => compress(format, input)
-    Decompress => try! decompress(format, input)
+    Decompress => {
+      let r : Result[Bytes, _] = try? decompress(format, input)
+      guard r is Ok(out) else {
+        guard r is Err(e)
+        println("Error: \{e}")
+        @sys.exit(1)
+        return
+      }
+      out
+    }
   }
   let checksum = @zlib.adler32(output)
   println("\{output.length()} \{checksum}")

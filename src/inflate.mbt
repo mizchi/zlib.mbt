@@ -103,16 +103,15 @@ fn inflate_huffman_block(
   max_size : Int,
 ) -> Unit raise ZlibError {
   while true {
-    // Hard cap on output growth. Each iteration appends at most 258
-    // bytes (a max-length back-reference), so a single check here
-    // bounds total memory use.
-    if output.length() > max_size {
-      raise ZlibError::OutputTooLarge(
-        "Decompressed output exceeds max_size=\{max_size}",
-      )
-    }
     let sym = lit_tree.decode(reader)
     if sym < 256 {
+      // Exact bound for literal pushes: refuse to overshoot by even one
+      // byte. EOB (256) is still accepted at output.length() == max_size.
+      if output.length() >= max_size {
+        raise ZlibError::OutputTooLarge(
+          "Decompressed output exceeds max_size=\{max_size}",
+        )
+      }
       output.push(sym.to_byte())
       continue
     }
