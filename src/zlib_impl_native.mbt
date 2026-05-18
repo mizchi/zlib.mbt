@@ -55,14 +55,35 @@ extern "C" fn gzip_decompress_ffi(
 ) -> Int = "mizchi_zlib_native_gzip_decompress"
 
 ///|
-fn call_ffi(
+/// Pick the initial output buffer size for FFI calls, avoiding Int overflow.
+fn initial_ffi_buffer(input_len : Int, max_ratio : Int, cap : Int) -> Int {
+  let min_buf = 1024
+  // Avoid `input_len * max_ratio` overflow for very large inputs.
+  let scaled = if max_ratio > 0 && input_len > cap / max_ratio {
+    cap
+  } else {
+    input_len * max_ratio
+  }
+  let chosen = if scaled < min_buf { min_buf } else { scaled }
+  if chosen > cap {
+    cap
+  } else {
+    chosen
+  }
+}
+
+///|
+fn call_ffi_decompress(
   data : Bytes,
   max_ratio : Int,
   ffi : (Bytes, Int, Bytes, Int) -> Int,
+  max_size : Int,
 ) -> Bytes raise ZlibError {
+  if max_size < 0 {
+    raise ZlibError::InvalidData("max_size must be non-negative")
+  }
   let input_len = data.length()
-  let initial = input_len * max_ratio
-  let mut max_out = if initial < 1024 { 1024 } else { initial }
+  let mut max_out = initial_ffi_buffer(input_len, max_ratio, max_size)
   for _ in 0..<16 {
     let output = Bytes::make(max_out, b'\x00')
     let result = ffi(data, input_len, output, max_out)
@@ -70,7 +91,51 @@ fn call_ffi(
       return Bytes::makei(result, fn(i) { output[i] })
     }
     if result == -2 {
-      max_out = max_out * 2
+      // Output buffer too small. Refuse to grow past max_size — this is
+      // the OOM/zip-bomb guard.
+      if max_out >= max_size {
+        raise ZlibError::OutputTooLarge(
+          "Decompressed output exceeds max_size=\{max_size}",
+        )
+      }
+      let doubled = if max_out > max_size / 2 { max_size } else { max_out * 2 }
+      max_out = doubled
+      continue
+    }
+    raise ZlibError::InvalidData("native zlib error: \{result}")
+  }
+  raise ZlibError::OutputTooLarge(
+    "native zlib: output exceeds max_size=\{max_size}",
+  )
+}
+
+///|
+fn call_ffi_compress(
+  data : Bytes,
+  max_ratio : Int,
+  ffi : (Bytes, Int, Bytes, Int) -> Int,
+) -> Bytes raise ZlibError {
+  let input_len = data.length()
+  // Compressed output is bounded above by `input_len + small overhead`
+  // for any reasonable codec; doubling to Int.max - 16 is the safety net.
+  let safety_cap = 0x7fffffff - 16
+  let mut max_out = initial_ffi_buffer(input_len, max_ratio, safety_cap)
+  for _ in 0..<16 {
+    let output = Bytes::make(max_out, b'\x00')
+    let result = ffi(data, input_len, output, max_out)
+    if result >= 0 {
+      return Bytes::makei(result, fn(i) { output[i] })
+    }
+    if result == -2 {
+      if max_out >= safety_cap {
+        raise ZlibError::InvalidData("native zlib: output buffer too small")
+      }
+      let doubled = if max_out > safety_cap / 2 {
+        safety_cap
+      } else {
+        max_out * 2
+      }
+      max_out = doubled
       continue
     }
     raise ZlibError::InvalidData("native zlib error: \{result}")
@@ -80,20 +145,24 @@ fn call_ffi(
 
 ///|
 pub fn zlib_compress(data : Bytes) -> Bytes {
-  call_ffi(data, 2, zlib_compress_ffi) catch {
+  call_ffi_compress(data, 2, zlib_compress_ffi) catch {
     _ => abort("zlib_compress failed")
   }
 }
 
 ///|
-pub fn zlib_decompress(data : Bytes) -> Bytes raise ZlibError {
-  call_ffi(data, 8, zlib_decompress_ffi)
+pub fn zlib_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  call_ffi_decompress(data, 8, zlib_decompress_ffi, max_size)
 }
 
 ///|
 pub fn zlib_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
   // For offset-based decompression, use pure MoonBit inflate
   if start < 0 || start + 2 > data.length() {
@@ -112,7 +181,7 @@ pub fn zlib_decompress_at(
     raise ZlibError::InvalidData("Preset dictionary not supported")
   }
   let deflate_start = start + 2
-  let (result, offset) = inflate_deflate_stream(data, deflate_start)
+  let (result, offset) = inflate_deflate_stream(data, deflate_start, max_size)
   if offset + 4 > data.length() {
     raise ZlibError::InvalidData("Missing Adler-32 checksum")
   }
@@ -131,40 +200,48 @@ pub fn zlib_decompress_at(
 
 ///|
 pub fn deflate_compress(data : Bytes) -> Bytes {
-  call_ffi(data, 2, deflate_compress_ffi) catch {
+  call_ffi_compress(data, 2, deflate_compress_ffi) catch {
     _ => abort("deflate_compress failed")
   }
 }
 
 ///|
-pub fn deflate_decompress(data : Bytes) -> Bytes raise ZlibError {
-  call_ffi(data, 8, deflate_decompress_ffi)
+pub fn deflate_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  call_ffi_decompress(data, 8, deflate_decompress_ffi, max_size)
 }
 
 ///|
 pub fn deflate_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
-  inflate_deflate_stream(data, start)
+  inflate_deflate_stream(data, start, max_size)
 }
 
 ///|
 pub fn gzip_compress(data : Bytes) -> Bytes {
-  call_ffi(data, 2, gzip_compress_ffi) catch {
+  call_ffi_compress(data, 2, gzip_compress_ffi) catch {
     _ => abort("gzip_compress failed")
   }
 }
 
 ///|
-pub fn gzip_decompress(data : Bytes) -> Bytes raise ZlibError {
-  call_ffi(data, 8, gzip_decompress_ffi)
+pub fn gzip_decompress(
+  data : Bytes,
+  max_size? : Int = default_max_decompressed_size,
+) -> Bytes raise ZlibError {
+  call_ffi_decompress(data, 8, gzip_decompress_ffi, max_size)
 }
 
 ///|
 pub fn gzip_decompress_at(
   data : Bytes,
   start : Int,
+  max_size? : Int = default_max_decompressed_size,
 ) -> (Bytes, Int) raise ZlibError {
   if start < 0 || start + 10 > data.length() {
     raise ZlibError::InvalidData("Gzip data too short")
@@ -209,7 +286,7 @@ pub fn gzip_decompress_at(
     }
     offset += 2
   }
-  let (result, end_offset) = inflate_deflate_stream(data, offset)
+  let (result, end_offset) = inflate_deflate_stream(data, offset, max_size)
   if end_offset + 8 > data.length() {
     raise ZlibError::InvalidData("Missing gzip trailer")
   }
