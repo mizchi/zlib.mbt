@@ -1,0 +1,13 @@
+import {
+  "mizchi/zlib",
+}
+
+options(
+  link: { "native": { "cc-link-flags": "-lz", "stub-cc-link-flags": "-lz" } },
+  "native-stub": [ "zlib_impl_native.c" ],
+  targets: {
+    "fallback_impl.mbt": [ "js", "wasm", "wasm-gc" ],
+    "native_impl.mbt": [ "native", "llvm" ],
+    "native_test.mbt": [ "native", "llvm" ],
+  },
+)

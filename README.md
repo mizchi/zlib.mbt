@@ -21,6 +21,21 @@ just test-update  # update snapshot tests
 just info      # generate type definition files
 ```
 
+## Native target
+
+`mizchi/zlib` itself is pure MoonBit on every target, including `native`.
+
+If you want the system zlib backend explicitly, import `mizchi/zlib/native`:
+
+```moonbit
+import "mizchi/zlib/native" as @zlib_native
+
+let compressed = @zlib_native.zlib_compress(data)
+let decompressed = @zlib_native.zlib_decompress(compressed)
+```
+
+`mizchi/zlib/native` links `-lz` internally, so dependents do not need to add native linker flags themselves.
+
 ## Benchmark (Rust flate2 / miniz_oxide baseline)
 
 Measured on 2026-01-28 with `hyperfine --warmup 3` and the bundled 256KiB fixtures.

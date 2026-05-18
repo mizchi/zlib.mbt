@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.4.5] - 2026-05-19
 
 ### Security
 - **Bound decompressed output size.** All `*_decompress` / `*_decompress_at`
@@ -11,9 +11,6 @@ All notable changes to this project will be documented in this file.
   `ZlibError::OutputTooLarge` rather than allowing unbounded allocation.
   This closes a "zip bomb" vector where a tiny crafted deflate stream
   could otherwise expand to gigabytes via repeated back-references.
-- **Native FFI buffer growth is capped.** `call_ffi_decompress` (native
-  target) no longer doubles the C output buffer indefinitely. It refuses
-  to grow past `max_size`.
 - **Tighter dynamic-tree parsing.** `build_dynamic_trees` rejects
   code-length repeat codes (16/17/18) that would overrun the declared
   `hlit + hdist` table, and rejects code 16 with no previous length
@@ -29,6 +26,26 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - `ZlibError` derives only `Eq`; `Show` is implemented manually to drop
   the deprecated `derive(Show)`.
+- Re-applies the `mizchi/zlib/native` split from 0.4.4 on top of the
+  hardened pure-MoonBit core. `mizchi/zlib` itself is pure MoonBit on
+  every target (including `native`); dependents that want the C FFI
+  backend import `mizchi/zlib/native`, which links `-lz` internally.
+
+### Note
+- 0.4.2/0.4.3/0.4.4 were published to mooncakes.io from a working copy
+  whose commits never made it back to GitHub. 0.4.5 reconstructs the
+  0.4.4 native split from the registry tarball and re-bases the 0.4.1
+  security work on top of it.
+
+## [0.4.4] - 2026-04-09
+
+### Changed
+- Keep `mizchi/zlib` pure MoonBit on `native` as well as `js`/`wasm`.
+- Add explicit `mizchi/zlib/native` package for system zlib C FFI usage.
+- Remove the need for dependents to add `-lz` when using the default package.
+
+> Released to mooncakes.io only; the underlying commits never made it
+> back to the GitHub repo. Reconstructed retroactively in 0.4.5.
 
 ## [0.3.0] - 2026-01-29
 
