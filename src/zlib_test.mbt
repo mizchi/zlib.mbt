@@ -322,6 +322,162 @@ test "zlib decompress accepts non-0x78 CMF" {
 }
 
 ///|
+/// Helper to assert that decoding raises a ZlibError.
+fn[T] assert_decode_error(r : Result[T, ZlibError]) -> Unit raise {
+  match r {
+    Err(_) => ()
+    Ok(_) => fail("expected decode error, got Ok")
+  }
+}
+
+///|
+test "zlib decompress rejects truncated header" {
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
+    Bytes::from_array([b'\x78']),
+  )
+  assert_decode_error(r)
+}
+
+///|
+test "zlib decompress rejects bad FLG checksum" {
+  // CMF=0x78 valid, FLG=0x00 makes (0x7800 + 0) % 31 != 0.
+  let bad = Bytes::from_array([b'\x78', b'\x00', b'\x03', b'\x00'])
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(bad)
+  assert_decode_error(r)
+}
+
+///|
+test "zlib decompress rejects FDICT" {
+  // CMF=0x78 with FDICT bit (bit 5 of FLG) set. Choose FLG so the
+  // header checksum still validates.
+  let cmf = 0x78
+  let mut flg = 0x20 // FDICT=1
+  while (cmf * 256 + flg) % 31 != 0 {
+    flg += 1
+    // Keep FDICT set
+    if (flg & 0x20) == 0 {
+      flg = flg | 0x20
+    }
+  }
+  let bad = Bytes::from_array([cmf.to_byte(), flg.to_byte(), b'\x00', b'\x00'])
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(bad)
+  assert_decode_error(r)
+}
+
+///|
+test "zlib decompress rejects bad Adler-32" {
+  // hello compressed, then corrupt the trailing checksum.
+  let hex = "789ccb48cdc9c90700062c0215"
+  let compressed = hex_to_bytes(hex)
+  let arr : Array[Byte] = []
+  for b in compressed {
+    arr.push(b)
+  }
+  arr[arr.length() - 1] = b'\x00'
+  let corrupted = Bytes::from_array(
+    FixedArray::makei(arr.length(), fn(i) { arr[i] }),
+  )
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(corrupted)
+  assert_decode_error(r)
+}
+
+///|
+test "gzip decompress rejects bad magic" {
+  let bad : Array[Byte] = []
+  for _ in 0..<20 {
+    bad.push(b'\x00')
+  }
+  let bytes = Bytes::from_array(
+    FixedArray::makei(bad.length(), fn(i) { bad[i] }),
+  )
+  let r : Result[Bytes, ZlibError] = try? gzip_decompress(bytes)
+  assert_decode_error(r)
+}
+
+///|
+test "gzip decompress rejects truncated stream" {
+  let r : Result[Bytes, ZlibError] = try? gzip_decompress(
+    Bytes::from_array([b'\x1f', b'\x8b', b'\x08']),
+  )
+  assert_decode_error(r)
+}
+
+///|
+test "deflate decompress rejects invalid block type" {
+  // First byte 0x07: BFINAL=1, BTYPE=11 → reserved (invalid).
+  let bad = Bytes::from_array([b'\x07', b'\x00', b'\x00'])
+  let r : Result[Bytes, ZlibError] = try? deflate_decompress(bad)
+  assert_decode_error(r)
+}
+
+///|
+test "deflate decompress rejects malformed stored NLEN" {
+  let bad = Bytes::from_array([
+    b'\x01', // BFINAL=1, BTYPE=00 (stored)
+     b'\x05', b'\x00', // LEN=5
+     b'\x00', b'\x00', // NLEN=0 (should be ~LEN = 0xfffa)
+  ])
+  let r : Result[Bytes, ZlibError] = try? deflate_decompress(bad)
+  assert_decode_error(r)
+}
+
+///|
+test "stored block rejects malformed NLEN" {
+  // Hand-built zlib with one stored block whose NLEN != ~LEN.
+  let cmf = 0x78
+  let mut flg = 0x01
+  while (cmf * 256 + flg) % 31 != 0 {
+    flg += 1
+  }
+  let bytes : Array[Byte] = []
+  bytes.push(cmf.to_byte())
+  bytes.push(flg.to_byte())
+  bytes.push(b'\x01') // BFINAL=1, BTYPE=00
+  bytes.push(b'\x02') // LEN lo
+  bytes.push(b'\x00') // LEN hi
+  bytes.push(b'\x00') // NLEN lo (invalid; should be 0xfd)
+  bytes.push(b'\x00') // NLEN hi (invalid; should be 0xff)
+  bytes.push(b'a')
+  bytes.push(b'b')
+  // Adler-32 of "ab"
+  let payload = Bytes::from_array([b'a', b'b'])
+  let adler = adler32(payload)
+  bytes.push(((adler >> 24) & 0xff).to_byte())
+  bytes.push(((adler >> 16) & 0xff).to_byte())
+  bytes.push(((adler >> 8) & 0xff).to_byte())
+  bytes.push((adler & 0xff).to_byte())
+  let data = Bytes::from_array(
+    FixedArray::makei(bytes.length(), fn(i) { bytes[i] }),
+  )
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress_stored(data)
+  assert_decode_error(r)
+}
+
+///|
+test "max_size=0 accepts empty decompressed output" {
+  // Compressing an empty payload should still round-trip under max_size=0.
+  let empty = Bytes::from_array([])
+  let compressed = zlib_compress(empty)
+  let out = zlib_decompress(compressed, max_size=0)
+  inspect(out.length(), content="0")
+}
+
+///|
+test "negative max_size is rejected" {
+  let hex = "789ccb48cdc9c90700062c0215"
+  let compressed = hex_to_bytes(hex)
+  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
+    compressed,
+    max_size=-1,
+  )
+  match r {
+    Err(InvalidData(_)) => ()
+    Err(other) => fail("expected InvalidData, got \{other}")
+    Ok(_) => fail("expected error, got Ok")
+  }
+}
+
+///|
 test "fixture loader hex roundtrip" {
   let bytes = Bytes::from_array([b'\x00', b'\x01', b'\xff'])
   let hex = bytes_to_hex(bytes)
