@@ -25,14 +25,31 @@ fn build_crc32_table() -> FixedArray[UInt] {
 let crc32_table : FixedArray[UInt] = build_crc32_table()
 
 ///|
+/// Reflected CRC-32 (zlib/gzip polynomial 0xEDB88320). Slicing-by-8 bulk
+/// path delegates to a target-conditional inner loop (`crc32_bulk_impl`),
+/// then finishes the trailing 0–7 bytes with the standard byte table.
+///
+/// Inner loop dispatch:
+///   * wasm     — `crc32_simd.mbt`, inline-WAT with direct `i32.load`s
+///                of the input bytes and 8 parallel `i32.load`s from a
+///                flattened slicing-by-8 table.
+///   * other    — `crc32_scalar.mbt`, pure-MoonBit slicing-by-8.
 pub fn crc32(data : Bytes) -> UInt {
   let mut crc : UInt = Int::reinterpret_as_uint(-1)
-  for b in data {
+  let len = data.length()
+  let bulk_end = len & -8
+  if bulk_end > 0 {
+    crc = Int::reinterpret_as_uint(
+      crc32_bulk_impl(data, bulk_end, crc.reinterpret_as_int()),
+    )
+  }
+  let mut i = bulk_end
+  while i < len {
     let idx = UInt::reinterpret_as_int(
-      (crc ^ Int::reinterpret_as_uint(b.to_int())) &
-      Int::reinterpret_as_uint(255),
+      (crc ^ Int::reinterpret_as_uint(data[i].to_int())) & 0xFFU,
     )
     crc = (crc >> 8) ^ crc32_table[idx]
+    i = i + 1
   }
   crc ^ Int::reinterpret_as_uint(-1)
 }

@@ -8,5 +8,7 @@ options(
     "zlib_impl_js.mbt": [ "js", "native", "wasm", "wasm-gc", "llvm" ],
     "adler32_scalar.mbt": [ "not", "wasm" ],
     "adler32_simd.mbt": [ "wasm" ],
+    "crc32_scalar.mbt": [ "not", "wasm" ],
+    "crc32_simd.mbt": [ "wasm" ],
   },
 )
