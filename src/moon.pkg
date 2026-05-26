@@ -4,5 +4,9 @@ import {
 }
 
 options(
-  targets: { "zlib_impl_js.mbt": [ "js", "native", "wasm", "wasm-gc", "llvm" ] },
+  targets: {
+    "zlib_impl_js.mbt": [ "js", "native", "wasm", "wasm-gc", "llvm" ],
+    "adler32_scalar.mbt": [ "not", "wasm" ],
+    "adler32_simd.mbt": [ "wasm" ],
+  },
 )
