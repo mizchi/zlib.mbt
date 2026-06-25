@@ -1,6 +1,6 @@
 lockfile_version: '1'
-generated_at: '2026-06-25T10:05:45.233424+00:00'
-apm_version: 0.12.4
+generated_at: '2026-06-25T10:52:16.600857+00:00'
+apm_version: 0.21.0
 dependencies:
 - repo_url: mizchi/moon-component
   host: github.com
@@ -12,6 +12,9 @@ dependencies:
   deployed_files:
   - .agents/skills/skill
   - .claude/skills/skill
+  - .claude/skills/skill/SKILL.md
+  deployed_file_hashes:
+    .claude/skills/skill/SKILL.md: sha256:b45d79214f0b680294e088a3f79ffb0e2b1efead487086b613f7f49a5e79da16
   content_hash: sha256:7dc3cf59f957c2416027a29dc74944c963e4a58f467352bef9740fb2863c6703
 - repo_url: mizchi/skills
   host: github.com
@@ -23,6 +26,39 @@ dependencies:
   deployed_files:
   - .agents/skills/moonbit-practice
   - .claude/skills/moonbit-practice
+  - .claude/skills/moonbit-practice/README.md
+  - .claude/skills/moonbit-practice/SKILL.md
+  - .claude/skills/moonbit-practice/assets/ci-nix.yaml
+  - .claude/skills/moonbit-practice/assets/ci.yaml
+  - .claude/skills/moonbit-practice/assets/publish-to-npm.yaml
+  - .claude/skills/moonbit-practice/reference/configuration.md
+  - .claude/skills/moonbit-practice/reference/ffi-native.md
+  - .claude/skills/moonbit-practice/reference/ffi.md
+  - .claude/skills/moonbit-practice/reference/ide.md
+  - .claude/skills/moonbit-practice/reference/language.md
+  - .claude/skills/moonbit-practice/reference/mbtx.md
+  - .claude/skills/moonbit-practice/reference/nix.md
+  - .claude/skills/moonbit-practice/reference/performance.md
+  - .claude/skills/moonbit-practice/reference/refactor.md
+  - .claude/skills/moonbit-practice/reference/stdlib.md
+  - .claude/skills/moonbit-practice/reference/testing.md
+  deployed_file_hashes:
+    .claude/skills/moonbit-practice/README.md: sha256:f07e7fac87e5bb83dfc55ed2a8b348157396a42dfb9efca261b28cabfdc63546
+    .claude/skills/moonbit-practice/SKILL.md: sha256:8285beaf152a1034b2b95c48f1b1dc2dbc4d314432f6a356af5e73e53a6846a6
+    .claude/skills/moonbit-practice/assets/ci-nix.yaml: sha256:e50a2b2e076f86cba0cd41a859414e3ae2d8e70982f962401190caf9bd04c404
+    .claude/skills/moonbit-practice/assets/ci.yaml: sha256:c08233beb5b840ef49258e96bea3ff976c03869a4d26b2212a1f8ece544673dd
+    .claude/skills/moonbit-practice/assets/publish-to-npm.yaml: sha256:127f8e7e30c2443161b84f8f2bc3737abf481c5e5aa3f277a9d21a53c5a3503b
+    .claude/skills/moonbit-practice/reference/configuration.md: sha256:acf4d96afe5c614c91bb99480ff10af74fe43cb47164f362975bb4f562a1a7c3
+    .claude/skills/moonbit-practice/reference/ffi-native.md: sha256:59eb79e87d8a93b10e869c468ec6f597a7bfde9cd719141a16ab569374d778ee
+    .claude/skills/moonbit-practice/reference/ffi.md: sha256:cfa484b6d55ebd07db8147fe399215607a764b15c0b344f0c6beae7fdab9b5ab
+    .claude/skills/moonbit-practice/reference/ide.md: sha256:a0354782af4c1d4d07f0247566b1ff9ce6f7021951374872550a686a2e95ddbc
+    .claude/skills/moonbit-practice/reference/language.md: sha256:f9303c3be651ea9d5fc1f90e3c3ac2c833b57843d6b5c6bb8cdbf41110e91c3a
+    .claude/skills/moonbit-practice/reference/mbtx.md: sha256:af05236ca132d1df67643847ec39c47d98997ad2c46bb69f4a926a4c0f8a0c46
+    .claude/skills/moonbit-practice/reference/nix.md: sha256:6b261fdf79182bc02edb0a0cd2897fc6399a60382c63e65405013f4d833b9322
+    .claude/skills/moonbit-practice/reference/performance.md: sha256:28ce09972336e25d43aaded3518ae99998fe9cb2ae8a918e04196722bdaf7ec1
+    .claude/skills/moonbit-practice/reference/refactor.md: sha256:79a9f1bd18f00f0189ac2e60dec34b73a065d4f1fa8c37a27f244295bd5ee1f8
+    .claude/skills/moonbit-practice/reference/stdlib.md: sha256:b5f725c1241fa4472f5acb283585a4c108ca5e0531cd6424bd31caa42a20348a
+    .claude/skills/moonbit-practice/reference/testing.md: sha256:6d6f2673587775b03420bdcbdb381bbcf9e57d850ccfe708af196376085d3c61
   content_hash: sha256:dab4a6c6e2f8aaee3fd01d8178a33aaa7d5b43951c42358aa770147f3c632af9
 - repo_url: moonbitlang/moonbit-agent-guide
   host: github.com
@@ -34,4 +70,19 @@ dependencies:
   deployed_files:
   - .agents/skills/moonbit-c-binding
   - .claude/skills/moonbit-c-binding
+  - .claude/skills/moonbit-c-binding/SKILL.md
+  - .claude/skills/moonbit-c-binding/references/asan-validation.md
+  - .claude/skills/moonbit-c-binding/references/callbacks.md
+  - .claude/skills/moonbit-c-binding/references/including-c-sources.md
+  - .claude/skills/moonbit-c-binding/references/ownership-and-memory.md
+  - .claude/skills/moonbit-c-binding/scripts/.gitignore
+  - .claude/skills/moonbit-c-binding/scripts/run-asan.py
+  deployed_file_hashes:
+    .claude/skills/moonbit-c-binding/SKILL.md: sha256:d71c8098d32e13abae19c2e453693882f075a6a7cd585508baa6554966a06dd1
+    .claude/skills/moonbit-c-binding/references/asan-validation.md: sha256:e97e1aeb3128d4adadbd984a19f6293d2adec54fd702e0e2adf02211c0d9679b
+    .claude/skills/moonbit-c-binding/references/callbacks.md: sha256:4e6d069579a15e7ab659b19a78512d10ca20d2cddc2a8d8a156e79b89935b8f0
+    .claude/skills/moonbit-c-binding/references/including-c-sources.md: sha256:f2b1b21b33725c0d1dca0570c89eac03bc47d0ae50ce3aa03ecaf8316352c620
+    .claude/skills/moonbit-c-binding/references/ownership-and-memory.md: sha256:ae9edde76380edd64f1550c034e2ff0cea6a18bceae70d9493dfaefc6df5fcc6
+    .claude/skills/moonbit-c-binding/scripts/.gitignore: sha256:32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b
+    .claude/skills/moonbit-c-binding/scripts/run-asan.py: sha256:82970a5872cc9b0e109de0d52734de4bb925a7dead9c795aececae55184c3977
   content_hash: sha256:94fba0820e0aab0ffa36362f9a5fba07918882dfb516ce50784c62bdedd1da3f
