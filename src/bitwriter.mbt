@@ -44,5 +44,5 @@ fn BitWriter::align_byte(self : BitWriter) -> Unit {
 ///|
 fn BitWriter::finish(self : BitWriter) -> Bytes {
   self.align_byte()
-  Bytes::from_array(FixedArray::makei(self.buf.length(), fn(i) { self.buf[i] }))
+  Bytes::from_array(self.buf)
 }

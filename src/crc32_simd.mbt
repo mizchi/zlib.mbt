@@ -34,7 +34,7 @@ let crc32_table_flat : FixedArray[Int] = {
     for i in 0..<256 {
       let prev = arr[(k - 1) * 256 + i].reinterpret_as_uint()
       arr[k * 256 + i] = ((prev >> 8) ^
-        arr[(prev & 0xFFU).reinterpret_as_int()].reinterpret_as_uint()).reinterpret_as_int()
+      arr[(prev & 0xFFU).reinterpret_as_int()].reinterpret_as_uint()).reinterpret_as_int()
     }
   }
   arr

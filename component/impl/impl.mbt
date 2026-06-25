@@ -20,9 +20,7 @@ pub fn deflate_compress(data : Array[Byte]) -> Array[Byte] {
 ///|
 /// Export: deflate-decompress
 pub fn deflate_decompress(data : Array[Byte]) -> Result[Array[Byte], String] {
-  try {
-    Ok(to_array(@zlib.deflate_decompress(to_bytes(data))))
-  } catch {
+  Ok(to_array(@zlib.deflate_decompress(to_bytes(data)))) catch {
     e => Err(e.to_string())
   }
 }
@@ -36,9 +34,7 @@ pub fn gzip_compress_stored(data : Array[Byte]) -> Array[Byte] {
 ///|
 /// Export: gzip-decompress
 pub fn gzip_decompress(data : Array[Byte]) -> Result[Array[Byte], String] {
-  try {
-    Ok(to_array(@zlib.gzip_decompress(to_bytes(data))))
-  } catch {
+  Ok(to_array(@zlib.gzip_decompress(to_bytes(data)))) catch {
     e => Err(e.to_string())
   }
 }
@@ -52,9 +48,7 @@ pub fn zlib_compress(data : Array[Byte]) -> Array[Byte] {
 ///|
 /// Export: zlib-decompress
 pub fn zlib_decompress(data : Array[Byte]) -> Result[Array[Byte], String] {
-  try {
-    Ok(to_array(@zlib.zlib_decompress(to_bytes(data))))
-  } catch {
+  Ok(to_array(@zlib.zlib_decompress(to_bytes(data)))) catch {
     e => Err(e.to_string())
   }
 }

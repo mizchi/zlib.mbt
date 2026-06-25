@@ -1,0 +1,9 @@
+name: zlib
+version: 0.4.7
+targets:
+  - claude
+dependencies:
+  apm:
+    - mizchi/skills/lang/moonbit-practice#d85abbf3adac3c00662ac62647efd3accc42dd2f
+    - moonbitlang/moonbit-agent-guide/moonbit-c-binding#9300e644ce9da4f6ea7e1b62bf2b2eae25c2562e
+    - mizchi/moon-component/skill#v0.4.0

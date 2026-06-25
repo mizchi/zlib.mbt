@@ -5,3 +5,9 @@ target
 .mooncakes/
 .moonagent/
 .jj/
+
+# APM dependencies
+apm_modules/
+# APM deploy targets (run `apm install --frozen-lockfile` after clone)
+.claude/skills/
+.agents/skills/

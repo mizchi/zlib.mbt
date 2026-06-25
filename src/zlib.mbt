@@ -15,7 +15,7 @@ pub(all) suberror ZlibError {
 } derive(Eq)
 
 ///|
-pub impl Show for ZlibError with output(self, logger) {
+pub impl Show for ZlibError with fn output(self, logger) {
   match self {
     InvalidData(msg) => logger.write_string("InvalidData(\{msg})")
     OutputTooLarge(msg) => logger.write_string("OutputTooLarge(\{msg})")
@@ -39,7 +39,7 @@ let max_block_size : Int = 65535
 ///|
 /// Helper to convert Array[Byte] to Bytes
 fn zlib_array_to_bytes(arr : Array[Byte]) -> Bytes {
-  Bytes::from_array(FixedArray::makei(arr.length(), fn(i) { arr[i] }))
+  Bytes::from_array(arr)
 }
 
 ///|
