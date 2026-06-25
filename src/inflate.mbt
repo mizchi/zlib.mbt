@@ -28,7 +28,7 @@ let dist_extra : FixedArray[Int] = [
 
 ///|
 fn bytes_from_array(arr : Array[Byte]) -> Bytes {
-  Bytes::from_array(FixedArray::makei(arr.length(), fn(i) { arr[i] }))
+  Bytes::from_array(arr)
 }
 
 ///|
@@ -151,7 +151,7 @@ fn inflate_huffman_block(
     while remaining > 0 {
       let chunk = if remaining > distance { distance } else { remaining }
       for i in 0..<chunk {
-        output.push(output[start + i])
+        output.push(output.unsafe_get(start + i))
       }
       remaining -= chunk
     }

@@ -1,0 +1,37 @@
+lockfile_version: '1'
+generated_at: '2026-06-25T10:05:45.233424+00:00'
+apm_version: 0.12.4
+dependencies:
+- repo_url: mizchi/moon-component
+  host: github.com
+  resolved_commit: 1419ec11bfc4f71233c0a0c4ed079b3e819559ab
+  resolved_ref: v0.4.0
+  virtual_path: skill
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/skill
+  - .claude/skills/skill
+  content_hash: sha256:7dc3cf59f957c2416027a29dc74944c963e4a58f467352bef9740fb2863c6703
+- repo_url: mizchi/skills
+  host: github.com
+  resolved_commit: d85abbf3adac3c00662ac62647efd3accc42dd2f
+  resolved_ref: d85abbf3adac3c00662ac62647efd3accc42dd2f
+  virtual_path: lang/moonbit-practice
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/moonbit-practice
+  - .claude/skills/moonbit-practice
+  content_hash: sha256:dab4a6c6e2f8aaee3fd01d8178a33aaa7d5b43951c42358aa770147f3c632af9
+- repo_url: moonbitlang/moonbit-agent-guide
+  host: github.com
+  resolved_commit: 9300e644ce9da4f6ea7e1b62bf2b2eae25c2562e
+  resolved_ref: 9300e644ce9da4f6ea7e1b62bf2b2eae25c2562e
+  virtual_path: moonbit-c-binding
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/moonbit-c-binding
+  - .claude/skills/moonbit-c-binding
+  content_hash: sha256:94fba0820e0aab0ffa36362f9a5fba07918882dfb516ce50784c62bdedd1da3f
