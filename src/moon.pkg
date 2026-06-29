@@ -10,5 +10,7 @@ options(
     "adler32_simd.mbt": [ "wasm" ],
     "crc32_scalar.mbt": [ "not", "wasm" ],
     "crc32_simd.mbt": [ "wasm" ],
+    "deflate_match_scalar.mbt": [ "not", "wasm" ],
+    "deflate_match_simd.mbt": [ "wasm" ],
   },
 )

@@ -52,7 +52,7 @@ Commands are very short (<5ms), so shell overhead can skew results. wasm/wasm-gc
 
 ```
 zlib/
-├── moon.mod.json
+├── moon.mod
 ├── src/
 │   ├── moon.pkg
 │   ├── zlib.mbt

@@ -7,6 +7,9 @@
 let bench_size : Int = 256 * 1024
 
 ///|
+let deflate_bench_size : Int = 16 * 1024
+
+///|
 fn make_bench_bytes(size : Int) -> Bytes {
   let buf : Array[Byte] = []
   for i = 0; i < size; i = i + 1 {
@@ -16,7 +19,19 @@ fn make_bench_bytes(size : Int) -> Bytes {
 }
 
 ///|
+fn make_repeated_bench_bytes(size : Int) -> Bytes {
+  let buf : Array[Byte] = []
+  for i = 0; i < size; i = i + 1 {
+    buf.push((i % 64).to_byte())
+  }
+  Bytes::from_array(FixedArray::makei(buf.length(), fn(i) { buf[i] }))
+}
+
+///|
 let bench_data : Bytes = make_bench_bytes(bench_size)
+
+///|
+let deflate_bench_data : Bytes = make_repeated_bench_bytes(deflate_bench_size)
 
 ///|
 let bench_deflate_stored : Bytes = deflate_compress_stored(bench_data)
@@ -55,6 +70,16 @@ test "bench crc32" (b : @bench.T) {
 ///|
 test "bench deflate_compress_stored" (b : @bench.T) {
   b.bench(fn() { b.keep(deflate_compress_stored(bench_data)) })
+}
+
+///|
+test "bench deflate_compress_fixed_lz77" (b : @bench.T) {
+  b.bench(fn() { b.keep(deflate_compress_fixed(deflate_bench_data)) })
+}
+
+///|
+test "bench deflate_compress_best_lz77" (b : @bench.T) {
+  b.bench(fn() { b.keep(deflate_compress(deflate_bench_data)) })
 }
 
 ///|

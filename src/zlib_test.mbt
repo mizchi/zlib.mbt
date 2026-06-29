@@ -142,6 +142,41 @@ test "deflate round trip fixed" {
 }
 
 ///|
+test "deflate fixed golden output" {
+  let data = Bytes::from_array([
+    b'a', b'b', b'c', b'a', b'b', b'c', b'a', b'b', b'c', b'a', b'b', b'c',
+  ])
+  let compressed = deflate_compress_fixed(data)
+  inspect(
+    bytes_to_hex(compressed),
+    content=(
+      #|4b4c4a862300
+    ),
+  )
+}
+
+///|
+test "deflate best golden output" {
+  let data : Array[Byte] = []
+  for _ in 0..<8 {
+    data.push(b'a')
+    data.push(b'b')
+    data.push(b'c')
+    data.push(b'd')
+  }
+  let bytes = Bytes::from_array(
+    FixedArray::makei(data.length(), fn(i) { data[i] }),
+  )
+  let compressed = deflate_compress(bytes)
+  inspect(
+    bytes_to_hex(compressed),
+    content=(
+      #|4b4c4a4ec18701
+    ),
+  )
+}
+
+///|
 test "gzip round trip stored" {
   let data = Bytes::from_array([b'h', b'e', b'l', b'l', b'o'])
   let compressed = gzip_compress_stored(data)

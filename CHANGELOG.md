@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.8] - 2026-06-29
+
+### Changed
+- Reduce native allocations in deflate compression by packing hot-path
+  symbol metadata and token representations, reusing Huffman scratch
+  buffers, avoiding code-length RLE materialization, and delaying fixed /
+  dynamic output materialization until the winning block type is known.
+- Add a wasm SIMD LZ77 match-length helper using `v128.load`,
+  `i8x16.eq`, and `i8x16.bitmask`.
+
+### Added
+- Bench coverage for fixed and best deflate compression on a repeated
+  LZ77 workload.
+- Golden output checks for fixed and best deflate compression.
+
 ## [0.4.5] - 2026-05-19
 
 ### Security
