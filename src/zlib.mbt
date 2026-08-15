@@ -15,7 +15,7 @@ pub(all) suberror ZlibError {
 } derive(Eq)
 
 ///|
-pub impl Show for ZlibError with output(self, logger) {
+pub impl Show for ZlibError with fn output(self, logger) {
   match self {
     InvalidData(msg) => logger.write_string("InvalidData(\{msg})")
     OutputTooLarge(msg) => logger.write_string("OutputTooLarge(\{msg})")
