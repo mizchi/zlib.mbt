@@ -5,7 +5,6 @@ version = "0.4.9"
 import {
   "moonbitlang/x@0.4.40",
   "moonbitlang/async@0.16.6",
-  "mizchi/zlib@0.4.7",
 }
 
 readme = "README.mbt.md"
