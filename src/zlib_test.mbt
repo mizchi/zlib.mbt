@@ -217,14 +217,11 @@ test "zlib decompress respects max_size limit" {
   let hex = "789ccb48cdc9c90700062c0215"
   let compressed = hex_to_bytes(hex)
   // max_size=4 must reject (output would be 5 bytes).
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
-    compressed,
-    max_size=4,
-  )
-  match r {
-    Err(OutputTooLarge(_)) => ()
-    Err(other) => fail("expected OutputTooLarge, got \{other}")
-    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  try zlib_decompress(compressed, max_size=4) catch {
+    OutputTooLarge(_) => ()
+    other => fail("expected OutputTooLarge, got \{other}")
+  } noraise {
+    _ => fail("expected OutputTooLarge, got success")
   }
   // max_size=5 must accept.
   let ok = zlib_decompress(compressed, max_size=5)
@@ -236,14 +233,11 @@ test "gzip decompress respects max_size limit" {
   // gzip-compressed "hello" (10 bytes header + deflate + 8 trailer).
   let hex = "1f8b08000000000000ffcb48cdc9c9070086a6103605000000"
   let compressed = hex_to_bytes(hex)
-  let r : Result[Bytes, ZlibError] = try? gzip_decompress(
-    compressed,
-    max_size=4,
-  )
-  match r {
-    Err(OutputTooLarge(_)) => ()
-    Err(other) => fail("expected OutputTooLarge, got \{other}")
-    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  try gzip_decompress(compressed, max_size=4) catch {
+    OutputTooLarge(_) => ()
+    other => fail("expected OutputTooLarge, got \{other}")
+  } noraise {
+    _ => fail("expected OutputTooLarge, got success")
   }
 }
 
@@ -263,14 +257,11 @@ test "deflate decompress rejects zip-bomb-like expansion" {
   // Compressed should be much smaller than the expanded payload.
   assert_true(compressed.length() < 1000)
   // Decompressing with max_size below 50000 must fail with OutputTooLarge.
-  let r : Result[Bytes, ZlibError] = try? deflate_decompress(
-    compressed,
-    max_size=1024,
-  )
-  match r {
-    Err(OutputTooLarge(_)) => ()
-    Err(other) => fail("expected OutputTooLarge, got \{other}")
-    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  try deflate_decompress(compressed, max_size=1024) catch {
+    OutputTooLarge(_) => ()
+    other => fail("expected OutputTooLarge, got \{other}")
+  } noraise {
+    _ => fail("expected OutputTooLarge, got success")
   }
   // With a generous max_size it should succeed.
   let ok = deflate_decompress(compressed, max_size=50000)
@@ -281,14 +272,11 @@ test "deflate decompress rejects zip-bomb-like expansion" {
 test "zlib stored decompress respects max_size limit" {
   let data = Bytes::from_array([b'a', b'b', b'c', b'd', b'e'])
   let compressed = zlib_compress_stored(data)
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress_stored(
-    compressed,
-    max_size=4,
-  )
-  match r {
-    Err(OutputTooLarge(_)) => ()
-    Err(other) => fail("expected OutputTooLarge, got \{other}")
-    Ok(_) => fail("expected OutputTooLarge, got Ok")
+  try zlib_decompress_stored(compressed, max_size=4) catch {
+    OutputTooLarge(_) => ()
+    other => fail("expected OutputTooLarge, got \{other}")
+  } noraise {
+    _ => fail("expected OutputTooLarge, got success")
   }
 }
 
@@ -323,27 +311,26 @@ test "zlib decompress accepts non-0x78 CMF" {
 
 ///|
 /// Helper to assert that decoding raises a ZlibError.
-fn[T] assert_decode_error(r : Result[T, ZlibError]) -> Unit raise {
-  match r {
-    Err(_) => ()
-    Ok(_) => fail("expected decode error, got Ok")
+fn[T] assert_decode_error(decode : () -> T raise ZlibError) -> Unit raise {
+  try decode() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected decode error, got success")
   }
 }
 
 ///|
 test "zlib decompress rejects truncated header" {
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
-    Bytes::from_array([b'\x78']),
-  )
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError {
+    zlib_decompress(Bytes::from_array([b'\x78']))
+  })
 }
 
 ///|
 test "zlib decompress rejects bad FLG checksum" {
   // CMF=0x78 valid, FLG=0x00 makes (0x7800 + 0) % 31 != 0.
   let bad = Bytes::from_array([b'\x78', b'\x00', b'\x03', b'\x00'])
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(bad)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { zlib_decompress(bad) })
 }
 
 ///|
@@ -360,8 +347,7 @@ test "zlib decompress rejects FDICT" {
     }
   }
   let bad = Bytes::from_array([cmf.to_byte(), flg.to_byte(), b'\x00', b'\x00'])
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(bad)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { zlib_decompress(bad) })
 }
 
 ///|
@@ -377,8 +363,7 @@ test "zlib decompress rejects bad Adler-32" {
   let corrupted = Bytes::from_array(
     FixedArray::makei(arr.length(), fn(i) { arr[i] }),
   )
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(corrupted)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { zlib_decompress(corrupted) })
 }
 
 ///|
@@ -390,24 +375,21 @@ test "gzip decompress rejects bad magic" {
   let bytes = Bytes::from_array(
     FixedArray::makei(bad.length(), fn(i) { bad[i] }),
   )
-  let r : Result[Bytes, ZlibError] = try? gzip_decompress(bytes)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { gzip_decompress(bytes) })
 }
 
 ///|
 test "gzip decompress rejects truncated stream" {
-  let r : Result[Bytes, ZlibError] = try? gzip_decompress(
-    Bytes::from_array([b'\x1f', b'\x8b', b'\x08']),
-  )
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError {
+    gzip_decompress(Bytes::from_array([b'\x1f', b'\x8b', b'\x08']))
+  })
 }
 
 ///|
 test "deflate decompress rejects invalid block type" {
   // First byte 0x07: BFINAL=1, BTYPE=11 → reserved (invalid).
   let bad = Bytes::from_array([b'\x07', b'\x00', b'\x00'])
-  let r : Result[Bytes, ZlibError] = try? deflate_decompress(bad)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { deflate_decompress(bad) })
 }
 
 ///|
@@ -417,8 +399,7 @@ test "deflate decompress rejects malformed stored NLEN" {
      b'\x05', b'\x00', // LEN=5
      b'\x00', b'\x00', // NLEN=0 (should be ~LEN = 0xfffa)
   ])
-  let r : Result[Bytes, ZlibError] = try? deflate_decompress(bad)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { deflate_decompress(bad) })
 }
 
 ///|
@@ -449,8 +430,7 @@ test "stored block rejects malformed NLEN" {
   let data = Bytes::from_array(
     FixedArray::makei(bytes.length(), fn(i) { bytes[i] }),
   )
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress_stored(data)
-  assert_decode_error(r)
+  assert_decode_error(fn() raise ZlibError { zlib_decompress_stored(data) })
 }
 
 ///|
@@ -466,14 +446,11 @@ test "max_size=0 accepts empty decompressed output" {
 test "negative max_size is rejected" {
   let hex = "789ccb48cdc9c90700062c0215"
   let compressed = hex_to_bytes(hex)
-  let r : Result[Bytes, ZlibError] = try? zlib_decompress(
-    compressed,
-    max_size=-1,
-  )
-  match r {
-    Err(InvalidData(_)) => ()
-    Err(other) => fail("expected InvalidData, got \{other}")
-    Ok(_) => fail("expected error, got Ok")
+  try zlib_decompress(compressed, max_size=-1) catch {
+    InvalidData(_) => ()
+    other => fail("expected InvalidData, got \{other}")
+  } noraise {
+    _ => fail("expected error, got success")
   }
 }
 
