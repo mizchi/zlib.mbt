@@ -49,6 +49,10 @@ pub(all) suberror ZlibError {
   InvalidData(String)
   OutputTooLarge(String)
 } derive(Eq)
+pub fn ZlibError::equal(Self, Self) -> Bool
+pub fn ZlibError::not_equal(Self, Self) -> Bool
+pub fn ZlibError::output(Self, &Logger) -> Unit
+pub fn ZlibError::to_string(Self) -> String
 pub impl Show for ZlibError
 
 // Types and methods
@@ -56,4 +60,3 @@ pub impl Show for ZlibError
 // Type aliases
 
 // Traits
-

@@ -32,4 +32,3 @@ pub fn zlib_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
 pub using @zlib {type ZlibError}
 
 // Traits
-

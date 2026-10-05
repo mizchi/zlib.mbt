@@ -384,7 +384,7 @@ fn build_huffman_lengths(
   let mut active_len = 0
   for i in 0..<symbol_count {
     if freqs[i] > 0 {
-      nodes.push({ freq: freqs[i], left: -1, right: -1, sym: i })
+      nodes.push({ freq: freqs[i], left: -1, right: -1, sym: i, })
       lengths[active_len] = nodes.length() - 1
       active_len += 1
     }

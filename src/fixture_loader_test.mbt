@@ -28,7 +28,7 @@ fn hex_to_bytes(hex : String) -> Bytes {
 ///|
 fn bytes_to_hex(data : Bytes) -> String {
   let digits = "0123456789abcdef".to_array()
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for b in data {
     let v = b.to_int()
     out.write_char(digits[(v >> 4) & 0xf])

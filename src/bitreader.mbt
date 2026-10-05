@@ -10,7 +10,7 @@ priv struct BitReader {
 
 ///|
 fn BitReader::new(data : Bytes, start : Int) -> BitReader {
-  { data, byte_pos: start, bit_buf: 0, bit_count: 0 }
+  { data, byte_pos: start, bit_buf: 0, bit_count: 0, }
 }
 
 ///|

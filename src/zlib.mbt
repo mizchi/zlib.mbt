@@ -308,3 +308,9 @@ fn write_u32_le(out : FixedArray[Byte], offset : Int, v : UInt) -> Unit {
   out[offset + 2] = ((v >> 16) & mask).to_byte()
   out[offset + 3] = ((v >> 24) & mask).to_byte()
 }
+
+///|
+pub extend ZlibError with Eq::{not_equal, equal}
+
+///|
+pub extend ZlibError with Show::{to_string, output}

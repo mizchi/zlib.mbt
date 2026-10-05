@@ -1,7 +1,7 @@
 ///|
 /// CLI for cross-verification: read binary, compress/decompress, write binary
 fn main {
-  let args = @sys.get_cli_args()
+  let args = cli_args()
   if args.length() < 5 {
     println(
       "Usage: verify <compress|decompress> <zlib|deflate|gzip> <input> <output>",
@@ -44,4 +44,22 @@ fn main {
     }
   }
   println("OK \{input.length()} -> \{output.length()}")
+}
+
+///|
+#cfg(not(target="js"))
+fn cli_args() -> Array[String] {
+  @env.args()
+}
+
+///|
+#cfg(target="js")
+fn cli_args() -> Array[String] {
+  let args = @env.args()
+  // Keep argv[0] as the program name, without Node's executable path.
+  if args.is_empty() {
+    []
+  } else {
+    args[1:].to_owned()
+  }
 }
