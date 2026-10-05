@@ -3,8 +3,8 @@ name = "mizchi/zlib"
 version = "0.4.8"
 
 import {
-  "moonbitlang/x@0.4.40",
-  "moonbitlang/async@0.16.6",
+  "moonbitlang/x@0.5.5",
+  "moonbitlang/async@0.22.4",
 }
 
 readme = "README.mbt.md"
@@ -19,6 +19,4 @@ description = "Pure MoonBit zlib/deflate implementation."
 
 preferred_target = "js"
 
-options(
-  source: "src",
-)
+source = "src"

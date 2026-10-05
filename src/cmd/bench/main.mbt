@@ -61,7 +61,7 @@ fn decompress(format : Format, data : Bytes) -> Bytes raise {
 
 ///|
 fn main {
-  let args = @sys.get_cli_args()
+  let args = cli_args()
   if args.length() < 4 {
     usage()
     @sys.exit(1)
@@ -97,4 +97,22 @@ fn main {
   }
   let checksum = @zlib.adler32(output)
   println("\{output.length()} \{checksum}")
+}
+
+///|
+#cfg(not(target="js"))
+fn cli_args() -> Array[String] {
+  @env.args()
+}
+
+///|
+#cfg(target="js")
+fn cli_args() -> Array[String] {
+  let args = @env.args()
+  // Keep argv[0] as the program name, without Node's executable path.
+  if args.is_empty() {
+    []
+  } else {
+    args[1:].to_owned()
+  }
 }
