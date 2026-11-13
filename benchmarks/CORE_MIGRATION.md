@@ -39,6 +39,6 @@
 
 通常の圧縮・展開のために実装全体を維持し続ける理由は小さい。ただし JS の stored 圧縮は今回の入力ではこちらが約2.4〜3.3倍速く、そこに依存する利用者は実際の入力で再測定した方がよい。比較は [CORE_COMPARISON.md](CORE_COMPARISON.md) に記録した。
 
-検討を経て、0.4.11 を最終版として公開し、リポジトリをアーカイブする方針を確定した。利用者向けの移行案内は [MIGRATION.md](../MIGRATION.md) を参照。
+検討を経て、0.4.12 を最終版として公開し、リポジトリをアーカイブする方針を確定した。利用者向けの移行案内は [MIGRATION.md](../MIGRATION.md) を参照。
 
 参照: [公式更新情報](https://www.moonbitlang.com/updates)、[core flate API](https://github.com/moonbitlang/core/blob/c728bce6389a3b53111b4ccfb7b6d94dc96d014d/compress/flate/pkg.generated.mbti)、[core gzip の全展開 API](https://github.com/moonbitlang/core/blob/c728bce6389a3b53111b4ccfb7b6d94dc96d014d/compress/gzip/gzip.mbt)。

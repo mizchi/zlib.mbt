@@ -1,6 +1,6 @@
 # mizchi/zlib
 
-> **Maintenance ended. Version 0.4.11 is the final release.**
+> **Maintenance ended. Version 0.4.12 is the final release.**
 > This repository is archived for existing users. New projects should use
 > [moonbitlang/core](https://github.com/moonbitlang/core):
 > [flate](https://mooncakes.io/docs/moonbitlang/core/compress/flate),
@@ -44,7 +44,18 @@ let compressed = @zlib_native.zlib_compress(data)
 let decompressed = @zlib_native.zlib_decompress(compressed)
 ```
 
-`mizchi/zlib/native` links `-lz` internally, so dependents do not need to add native linker flags themselves.
+The application using `mizchi/zlib/native` must link the system zlib. With the
+current MoonBit toolchain, dependency link flags are not propagated to the final
+executable. Add this to the application's `moon.pkg`:
+
+```moon.pkg
+options(
+  link: { "native": { "cc-link-flags": "-lz" } },
+)
+```
+
+This flag is needed only for the explicit system-libz backend. The pure MoonBit
+`mizchi/zlib` package does not require it.
 
 ## Benchmark (Rust flate2 / miniz_oxide baseline)
 

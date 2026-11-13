@@ -2,7 +2,13 @@
 
 All notable changes to this project are recorded in this file.
 
-## 0.4.11 — final release (2026-11-13)
+## 0.4.12 — final release (2026-11-13)
+
+- Correct the native backend instructions: applications using `mizchi/zlib/native` must set `cc-link-flags` to `-lz` in their executable package.
+- Verify the published package from a separate application on JS and native, including the system-libz backend.
+- Supersede 0.4.11 as the final release. The compression implementation is unchanged.
+
+## 0.4.11 (2026-11-13)
 
 - End maintenance and archive the repository. Direct new projects to MoonBit core's flate, zlib, and gzip packages.
 - Document migration differences: output limits, gzip member handling, errors, standalone checksums, and the system-libz wrapper.

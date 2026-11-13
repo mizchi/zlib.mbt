@@ -1,6 +1,6 @@
 # Migrating to MoonBit core
 
-`mizchi/zlib` 0.4.11 is the final release. For new projects, use the codecs
+`mizchi/zlib` 0.4.12 is the final release. For new projects, use the codecs
 included in MoonBit core since v0.10.19:
 
 - [`moonbitlang/core/compress/flate`](https://mooncakes.io/docs/moonbitlang/core/compress/flate)
@@ -41,7 +41,9 @@ Preserve these application-level contracts explicitly:
 - **Standalone checksums and libz:** there is no direct public core replacement
   for this library's Adler-32/CRC-32 functions or its explicit system-libz
   native wrapper. Core's `internal/checksum` package is not a public API.
-  Retain a small compatibility layer if these are needed.
+  Retain a small compatibility layer if these are needed. Applications using
+  `mizchi/zlib/native` must specify `-lz` in their final executable link flags;
+  the package link flags are not propagated by the current toolchain.
 
 The final release remains available for existing applications. This repository
 will receive no further maintenance. Its stored-size calculation has been

@@ -1,6 +1,6 @@
 name = "mizchi/zlib"
 
-version = "0.4.11"
+version = "0.4.12"
 
 import {
   "moonbitlang/x@0.5.7",
