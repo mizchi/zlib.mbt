@@ -1,6 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are recorded in this file.
+
+## 0.4.11 — final release (2026-11-13)
+
+- End maintenance and archive the repository. Direct new projects to MoonBit core's flate, zlib, and gzip packages.
+- Document migration differences: output limits, gzip member handling, errors, standalone checksums, and the system-libz wrapper.
+- Update compatibility with the current MoonBit toolchain and moonbitlang/x 0.5.7; remove the unused async dependency.
+- Preserve the existing compression implementation and public API for legacy users.
+- Record reproducible native/JS/Wasm comparisons and the upstream stored-bound optimization in moonbitlang/core#4844.
 
 ## [0.4.8] - 2026-06-29
 

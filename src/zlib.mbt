@@ -9,10 +9,11 @@
 /// `OutputTooLarge` is raised when decompressed output would exceed the
 /// configured `max_size`. Decompression APIs accept a `max_size~` labeled
 /// argument; the default is `default_max_decompressed_size` (256 MiB).
+#derive(Eq)
 pub(all) suberror ZlibError {
   InvalidData(String)
   OutputTooLarge(String)
-} derive(Eq)
+}
 
 ///|
 pub impl Show for ZlibError with fn output(self, logger) {
@@ -28,13 +29,13 @@ pub impl Show for ZlibError with fn output(self, logger) {
 /// All public decompression functions enforce this by default to prevent
 /// "zip bomb" style DoS where a tiny crafted input decompresses to
 /// gigabytes of memory. Override via the `max_size~` labeled argument.
-pub let default_max_decompressed_size : Int = 256 * 1024 * 1024
+pub let default_max_decompressed_size : Int32 = 256 * 1024 * 1024
 
 ///| Git servers accept uncompressed deflate data
 
 ///|
 /// Maximum size for a single stored block
-let max_block_size : Int = 65535
+let max_block_size : Int32 = 65535
 
 ///|
 /// Helper to convert Array[Byte] to Bytes
@@ -44,7 +45,7 @@ fn zlib_array_to_bytes(arr : Array[Byte]) -> Bytes {
 
 ///|
 /// Compute stored deflate size (no wrapper)
-fn stored_deflate_len(len : Int) -> Int {
+fn stored_deflate_len(len : Int32) -> Int32 {
   if len == 0 {
     5
   } else {
@@ -57,9 +58,9 @@ fn stored_deflate_len(len : Int) -> Int {
 /// Returns next offset after writing.
 fn write_stored_deflate_blocks(
   out : FixedArray[Byte],
-  start : Int,
+  start : Int32,
   data : Bytes,
-) -> Int {
+) -> Int32 {
   let len = data.length()
   let mut offset = start
   let mut pos = 0
@@ -126,9 +127,9 @@ pub fn zlib_compress_stored(data : Bytes) -> Bytes {
 /// `OutputTooLarge` rather than allowing unbounded allocation.
 pub fn zlib_decompress_stored_at(
   data : Bytes,
-  start : Int,
-  max_size? : Int = default_max_decompressed_size,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+  max_size~ : Int32 = default_max_decompressed_size,
+) -> (Bytes, Int32) raise ZlibError {
   if max_size < 0 {
     raise ZlibError::InvalidData("max_size must be non-negative")
   }
@@ -228,7 +229,7 @@ pub fn zlib_decompress_stored_at(
 /// Decompress zlib stored blocks (single stream)
 pub fn zlib_decompress_stored(
   data : Bytes,
-  max_size? : Int = default_max_decompressed_size,
+  max_size~ : Int32 = default_max_decompressed_size,
 ) -> Bytes raise ZlibError {
   let (result, offset) = zlib_decompress_stored_at(data, 0, max_size~)
   if offset != data.length() {
@@ -265,13 +266,13 @@ pub fn gzip_compress_stored(data : Bytes) -> Bytes {
   let offset = write_stored_deflate_blocks(out, 10, data)
   let checksum = crc32(data)
   write_u32_le(out, offset, checksum)
-  let size = Int::reinterpret_as_uint(data.length())
+  let size = Int32::reinterpret_as_uint(data.length())
   write_u32_le(out, offset + 4, size)
   Bytes::from_array(out)
 }
 
 ///|
-fn read_u16_le(data : Bytes, start : Int) -> Int raise ZlibError {
+fn read_u16_le(data : Bytes, start : Int32) -> Int32 raise ZlibError {
   if start < 0 || start + 2 > data.length() {
     raise ZlibError::InvalidData("Unexpected end of data")
   }
@@ -281,19 +282,19 @@ fn read_u16_le(data : Bytes, start : Int) -> Int raise ZlibError {
 }
 
 ///|
-fn read_u32_le(data : Bytes, start : Int) -> UInt raise ZlibError {
+fn read_u32_le(data : Bytes, start : Int32) -> UInt32 raise ZlibError {
   if start < 0 || start + 4 > data.length() {
     raise ZlibError::InvalidData("Unexpected end of data")
   }
-  let b0 = Int::reinterpret_as_uint(data[start].to_int())
-  let b1 = Int::reinterpret_as_uint(data[start + 1].to_int())
-  let b2 = Int::reinterpret_as_uint(data[start + 2].to_int())
-  let b3 = Int::reinterpret_as_uint(data[start + 3].to_int())
+  let b0 = Int32::reinterpret_as_uint(data[start].to_int())
+  let b1 = Int32::reinterpret_as_uint(data[start + 1].to_int())
+  let b2 = Int32::reinterpret_as_uint(data[start + 2].to_int())
+  let b3 = Int32::reinterpret_as_uint(data[start + 3].to_int())
   b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
 }
 
 ///|
-fn write_u32_be(out : FixedArray[Byte], offset : Int, v : Int) -> Unit {
+fn write_u32_be(out : FixedArray[Byte], offset : Int32, v : Int32) -> Unit {
   out[offset] = ((v >> 24) & 0xff).to_byte()
   out[offset + 1] = ((v >> 16) & 0xff).to_byte()
   out[offset + 2] = ((v >> 8) & 0xff).to_byte()
@@ -301,16 +302,10 @@ fn write_u32_be(out : FixedArray[Byte], offset : Int, v : Int) -> Unit {
 }
 
 ///|
-fn write_u32_le(out : FixedArray[Byte], offset : Int, v : UInt) -> Unit {
-  let mask = Int::reinterpret_as_uint(255)
+fn write_u32_le(out : FixedArray[Byte], offset : Int32, v : UInt32) -> Unit {
+  let mask = Int32::reinterpret_as_uint(255)
   out[offset] = (v & mask).to_byte()
   out[offset + 1] = ((v >> 8) & mask).to_byte()
   out[offset + 2] = ((v >> 16) & mask).to_byte()
   out[offset + 3] = ((v >> 24) & mask).to_byte()
 }
-
-///|
-pub extend ZlibError with Eq::{not_equal, equal}
-
-///|
-pub extend ZlibError with Show::{to_string, output}

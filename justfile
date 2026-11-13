@@ -26,6 +26,10 @@ bench:
 bench-compare:
     bash scripts/bench_compare.sh
 
+# Compare pure MoonBit codecs with the toolchain's core (in-process timings)
+bench-core backend="native":
+    node scripts/bench_core.mjs {{backend}}
+
 # Update snapshot tests
 test-update:
     moon test --update --target {{target}}

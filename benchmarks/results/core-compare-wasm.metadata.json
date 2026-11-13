@@ -1,0 +1,25 @@
+{
+  "measured_at": "2026-11-13T11:45:18.273Z",
+  "target": "wasm",
+  "command": [
+    "moon",
+    "run",
+    "src/core_compare",
+    "--target",
+    "wasm",
+    "--release"
+  ],
+  "toolchain": "moon 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moon\nmoonc v0.10.20+65efd5b93 (2026-11-05) ~/.moon/bin/moonc\nmoonrun 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moonrun\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg",
+  "node": "v24.22.2",
+  "os": "darwin 25.6.0",
+  "cpu": "Apple M5",
+  "zlib_revision": "a9cb969b1c89616bd3ad33104e98ad0e2079c30b",
+  "working_tree": "M apm.lock.yaml\n M apm.yml\n M justfile\n M moon.mod\n M src/adler32.mbt\n M src/adler32_scalar.mbt\n M src/adler32_simd.mbt\n M src/bitreader.mbt\n M src/bitwriter.mbt\n M src/cmd/bench/main.mbt\n M src/cmd/bench/moon.pkg\n M src/cmd/bench/pkg.generated.mbti\n M src/cmd/verify/main.mbt\n M src/cmd/verify/moon.pkg\n M src/cmd/verify/pkg.generated.mbti\n M src/crc32.mbt\n M src/crc32_scalar.mbt\n M src/crc32_simd.mbt\n M src/deflate_compress.mbt\n M src/deflate_match_scalar.mbt\n M src/deflate_match_simd.mbt\n M src/fixture_loader_test.mbt\n M src/huffman.mbt\n M src/inflate.mbt\n M src/native/fallback_impl.mbt\n M src/native/native_impl.mbt\n M src/native/native_test.mbt\n M src/native/pkg.generated.mbti\n M src/pkg.generated.mbti\n M src/zlib.mbt\n M src/zlib_bench.mbt\n M src/zlib_impl_js.mbt\n M src/zlib_test.mbt\n?? benchmarks/\n?? scripts/bench_core.mjs\n?? src/core_compare/\n?? src/extends.mbt",
+  "core_source_sha256": {
+    "compress/flate": "3acf818183a7fdcb2d58f7b0c6cafa04c0b4d801a87a819c4fb9444e8e277d80",
+    "compress/zlib": "e53d919e5e86c3b58b47ce82b4561781934f3f246bfebce50ce8d0faf4b01b6f",
+    "compress/gzip": "bea14a8f039f5b078e3e9d78c5c2c3d4269f1aeec16753a70dd78f88911e1bf2",
+    "internal/checksum": "ed6d5a809e0441cddf642a7c5440960f791316f39e8258970a03f22889887975"
+  },
+  "timing": "microseconds per operation; 5 calibrated batches; median; process startup and input generation excluded"
+}

@@ -17,7 +17,7 @@
 /// single FixedArray[Int] of length 2048. The inline-WAT inner loop
 /// indexes via byte offset `(k * 256 + i) * 4` into linear memory.
 /// `Int` (not `UInt`) because inline-WAT only has the i32 ABI.
-let crc32_table_flat : FixedArray[Int] = {
+let crc32_table_flat : FixedArray[Int32] = {
   let arr = FixedArray::make(2048, 0)
   for i in 0..<256 {
     let mut v = i.reinterpret_as_uint()
@@ -41,7 +41,7 @@ let crc32_table_flat : FixedArray[Int] = {
 }
 
 ///|
-fn crc32_bulk_impl(data : Bytes, bulk_end : Int, crc_in : Int) -> Int {
+fn crc32_bulk_impl(data : Bytes, bulk_end : Int32, crc_in : Int32) -> Int32 {
   crc32_simd_chunks(data, bulk_end, crc32_table_flat, crc_in)
 }
 
@@ -52,8 +52,8 @@ fn crc32_bulk_impl(data : Bytes, bulk_end : Int, crc_in : Int) -> Int {
 #borrow(data, table_flat)
 fn crc32_simd_chunks(
   data : Bytes,
-  end : Int,
-  table_flat : FixedArray[Int],
-  crc_in : Int,
-) -> Int =
+  end : Int32,
+  table_flat : FixedArray[Int32],
+  crc_in : Int32,
+) -> Int32 =
   #|(func (param i32) (param i32) (param i32) (param i32) (result i32) (local i32) (local i32) (local i32) (local i32) local.get 3 local.set 5 block loop local.get 4 local.get 1 i32.ge_s br_if 1 local.get 0 local.get 4 i32.add i32.load local.get 5 i32.xor local.set 6 local.get 0 local.get 4 i32.add i32.const 4 i32.add i32.load local.set 7 local.get 2 local.get 6 i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 7168 i32.add i32.load local.get 2 local.get 6 i32.const 8 i32.shr_u i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 6144 i32.add i32.load i32.xor local.get 2 local.get 6 i32.const 16 i32.shr_u i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 5120 i32.add i32.load i32.xor local.get 2 local.get 6 i32.const 24 i32.shr_u i32.const 2 i32.shl i32.add i32.const 4096 i32.add i32.load i32.xor local.get 2 local.get 7 i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 3072 i32.add i32.load i32.xor local.get 2 local.get 7 i32.const 8 i32.shr_u i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 2048 i32.add i32.load i32.xor local.get 2 local.get 7 i32.const 16 i32.shr_u i32.const 255 i32.and i32.const 2 i32.shl i32.add i32.const 1024 i32.add i32.load i32.xor local.get 2 local.get 7 i32.const 24 i32.shr_u i32.const 2 i32.shl i32.add i32.load i32.xor local.set 5 local.get 4 i32.const 8 i32.add local.set 4 br 0 end end local.get 5)

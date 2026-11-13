@@ -1,0 +1,237 @@
+diff --git i/compress/gzip/gzip.mbt w/compress/gzip/gzip.mbt
+index fe087e0b..ea60cbaa 100644
+--- i/compress/gzip/gzip.mbt
++++ w/compress/gzip/gzip.mbt
+@@ -122,9 +122,29 @@ fn u32_le(data : BytesView, off : Int32) -> UInt32 {
+ 
+ ///|
+ /// Wrap a raw DEFLATE stream `deflated` of `input` in the gzip header/trailer.
++#cfg(any(target="native", target="wasm"))
++fn gzip_frame(input : BytesView, deflated : Bytes) -> Bytes {
++  guard! deflated.length() <= 0x7FFFFFFF - 18
++  let payload_end = 10 + deflated.length()
++  // Fill the final allocation, including both framing fields, without growing
++  // a Buffer or retaining an alias when the array is converted to Bytes.
++  let out = FixedArray::make(payload_end + 8, b'\x00')
++  // Header: magic, CM=8 (deflate), FLG=0, MTIME=0, XFL=0, OS=255 (unknown).
++  out.blit_from_bytes(0, b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff", 0, 10)
++  out.blit_from_bytes(10, deflated, 0, deflated.length())
++  let crc = @checksum.crc32(input)
++  let size = input.length().reinterpret_as_uint()
++  for i in 0..<4 {
++    out[payload_end + i] = ((crc >> (i * 8)) & 0xFF).to_byte()
++    out[payload_end + 4 + i] = ((size >> (i * 8)) & 0xFF).to_byte()
++  }
++  Bytes::from_array(out)
++}
++
++///|
++#cfg(not(any(target="native", target="wasm")))
+ fn gzip_frame(input : BytesView, deflated : Bytes) -> Bytes {
+   let out = @buffer.Buffer()
+-  // Header: magic, CM=8 (deflate), FLG=0, MTIME=0, XFL=0, OS=255 (unknown).
+   out.write_bytes(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff")
+   out.write_bytes(deflated)
+   out.write_uint_le(@checksum.crc32(input))
+diff --git i/compress/gzip/moon.pkg w/compress/gzip/moon.pkg
+index 83e8ec08..7239a85e 100644
+--- i/compress/gzip/moon.pkg
++++ w/compress/gzip/moon.pkg
+@@ -18,4 +18,5 @@ import {
+ 
+ import {
+   "moonbitlang/core/test",
++  "moonbitlang/core/bench",
+ } for "wbtest"
+diff --git i/compress/zlib/moon.pkg w/compress/zlib/moon.pkg
+index 112f92c7..11956049 100644
+--- i/compress/zlib/moon.pkg
++++ w/compress/zlib/moon.pkg
+@@ -3,18 +3,25 @@ options(
+   "allow-experimental-packages": true,
+ )
+ 
++#cfg(not(any(target="native", target="wasm")))
++import {
++  "moonbitlang/core/buffer",
++}
++
+ import {
+   "moonbitlang/core/builtin",
+   "moonbitlang/core/debug",
+-  "moonbitlang/core/buffer",
+   "moonbitlang/core/compress/flate",
+   "moonbitlang/core/internal/checksum",
+ }
+ 
+ import {
++  "moonbitlang/core/buffer",
+   "moonbitlang/core/test",
+ } for "test"
+ 
+ import {
++  "moonbitlang/core/buffer",
+   "moonbitlang/core/test",
++  "moonbitlang/core/bench",
+ } for "wbtest"
+diff --git i/compress/zlib/zlib.mbt w/compress/zlib/zlib.mbt
+index 2c3a89e2..0780d119 100644
+--- i/compress/zlib/zlib.mbt
++++ w/compress/zlib/zlib.mbt
+@@ -113,6 +113,31 @@ fn adler32_cancellable(
+ 
+ ///|
+ /// Wrap a raw DEFLATE stream `deflated` of `input` in the zlib header/trailer.
++#cfg(any(target="native", target="wasm"))
++fn zlib_frame(
++  input : BytesView,
++  deflated : Bytes,
++  dictionary : BytesView?,
++) -> Bytes {
++  let header = zlib_header(dictionary)
++  guard! deflated.length() <= 0x7FFFFFFF - header.length() - 4
++  let payload_end = header.length() + deflated.length()
++  // Fill the final allocation directly. In addition to avoiding growth, the
++  // whole, exclusively owned array can become Bytes without a copy on native/Wasm.
++  let out = FixedArray::make(payload_end + 4, b'\x00')
++  for i, byte in header {
++    out[i] = byte
++  }
++  out.blit_from_bytes(header.length(), deflated, 0, deflated.length())
++  let adler = @checksum.adler32(input)
++  for i in 0..<4 {
++    out[payload_end + i] = ((adler >> (24 - i * 8)) & 0xFF).to_byte()
++  }
++  Bytes::from_array(out)
++}
++
++///|
++#cfg(not(any(target="native", target="wasm")))
+ fn zlib_frame(
+   input : BytesView,
+   deflated : Bytes,
+@@ -123,8 +148,7 @@ fn zlib_frame(
+     out.write_byte(byte)
+   }
+   out.write_bytes(deflated)
+-  let adler = @checksum.adler32(input)
+-  out.write_uint_be(adler)
++  out.write_uint_be(@checksum.adler32(input))
+   out.to_bytes()
+ }
+ 
+diff --git 1/compress/gzip/frame_wbtest.mbt 2/compress/gzip/frame_wbtest.mbt
+new file mode 100644
+index 00000000..bc768fb4
+--- /dev/null
++++ 2/compress/gzip/frame_wbtest.mbt
+@@ -0,0 +1,46 @@
++///|
++test "frame preserves complete stored streams at allocation boundaries" {
++  for size in [0, 1, 15, 16, 63, 64, 65, 1024, 65535, 65536, 262144] {
++    let backing = Bytes::from_array(
++      FixedArray::makei(size + 7, i => (i % 251).to_byte()),
++    )
++    let input = backing[3:3 + size]
++    let deflated = @flate.deflate_all(input, strategy=Standard(level=0))
++    let framed = gzip_frame(input, deflated)
++    @test.assert_eq(decompress(framed), input.to_owned())
++    @test.assert_eq(framed.length(), deflated.length() + 18)
++    if size == 262144 {
++      // Golden trailer from Python zlib, independent of the decoder/checksum code.
++      @test.assert_eq(
++        framed[framed.length() - 8:].to_owned(),
++        b"\x3c\x9e\x2f\x54\x00\x00\x04\x00",
++      )
++    }
++  }
++}
++
++///|
++test "bench complete frame allocation" (b : @bench.T) {
++  for size in [1024, 262144] {
++    let input = Bytes::from_array(
++      FixedArray::makei(size, i => (i % 251).to_byte()),
++    )
++    let deflated = @flate.deflate_all(input, strategy=Standard(level=0))
++    let sink : FixedArray[Int32] = [0]
++    b.bench(name="gzip frame \{size}", count=7, () => {
++      sink[0] = gzip_frame(input, deflated).length()
++    })
++  }
++}
++
++///|
++test "bench complete stored compression" (b : @bench.T) {
++  let input = Bytes::makei(262144, i => (i % 251).to_byte())
++  let sink : FixedArray[Int32] = [0]
++  b.bench(name="gzip compress level 0 262144", count=7, () => {
++    sink[0] = compress(input, strategy=Standard(level=0)).length()
++  })
++  b.bench(name="gzip compress level 6 262144", count=7, () => {
++    sink[0] = compress(input, strategy=Standard(level=6)).length()
++  })
++}
+diff --git 1/compress/zlib/frame_wbtest.mbt 2/compress/zlib/frame_wbtest.mbt
+new file mode 100644
+index 00000000..4e4b31da
+--- /dev/null
++++ 2/compress/zlib/frame_wbtest.mbt
+@@ -0,0 +1,57 @@
++///|
++test "frame preserves complete stored streams at allocation boundaries" {
++  for size in [0, 1, 15, 16, 63, 64, 65, 1024, 65535, 65536, 262144] {
++    let backing = Bytes::from_array(
++      FixedArray::makei(size + 7, i => (i % 251).to_byte()),
++    )
++    let input = backing[3:3 + size]
++    let deflated = @flate.deflate_all(input, strategy=Standard(level=0))
++    let framed = zlib_frame(input, deflated, None)
++    @test.assert_eq(decompress(framed), input.to_owned())
++    @test.assert_eq(framed.length(), deflated.length() + 6)
++    if size == 262144 {
++      // Golden trailer from Python zlib, independent of the decoder/checksum code.
++      @test.assert_eq(
++        framed[framed.length() - 4:].to_owned(),
++        b"\x9c\x41\x00\xfb",
++      )
++    }
++  }
++}
++
++///|
++test "bench complete frame allocation" (b : @bench.T) {
++  for size in [1024, 262144] {
++    let input = Bytes::from_array(
++      FixedArray::makei(size, i => (i % 251).to_byte()),
++    )
++    let deflated = @flate.deflate_all(input, strategy=Standard(level=0))
++    let sink : FixedArray[Int32] = [0]
++    b.bench(name="zlib frame \{size}", count=7, () => {
++      sink[0] = zlib_frame(input, deflated, None).length()
++    })
++  }
++}
++
++///|
++test "frame preserves preset dictionary id" {
++  let dict = b"MoonBit dictionary"
++  let input = b"MoonBit dictionary with repeated MoonBit dictionary"
++  let deflated = @flate.deflate_all(input, dictionary=dict)
++  let framed = zlib_frame(input, deflated, Some(dict))
++  @test.assert_eq(framed.length(), deflated.length() + 10)
++  @test.assert_eq(decompress(framed, dictionary=dict), input)
++  @test.assert_eq(framed, compress(input, dictionary=dict))
++}
++
++///|
++test "bench complete stored compression" (b : @bench.T) {
++  let input = Bytes::makei(262144, i => (i % 251).to_byte())
++  let sink : FixedArray[Int32] = [0]
++  b.bench(name="zlib compress level 0 262144", count=7, () => {
++    sink[0] = compress(input, strategy=Standard(level=0)).length()
++  })
++  b.bench(name="zlib compress level 6 262144", count=7, () => {
++    sink[0] = compress(input, strategy=Standard(level=6)).length()
++  })
++}

@@ -1,85 +1,85 @@
 ///| Deflate compression (fixed Huffman + LZ77)
 
 ///|
-let deflate_length_base : FixedArray[Int] = [
+let deflate_length_base : FixedArray[Int32] = [
   3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83,
   99, 115, 131, 163, 195, 227, 258,
 ]
 
 ///|
-let deflate_length_extra : FixedArray[Int] = [
+let deflate_length_extra : FixedArray[Int32] = [
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5,
   5, 0,
 ]
 
 ///|
-let deflate_dist_base : FixedArray[Int] = [
+let deflate_dist_base : FixedArray[Int32] = [
   1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
   1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
 ]
 
 ///|
-let deflate_dist_extra : FixedArray[Int] = [
+let deflate_dist_extra : FixedArray[Int32] = [
   0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
   12, 12, 13, 13,
 ]
 
 ///|
-let window_size : Int = 32768
+let window_size : Int32 = 32768
 
 ///|
-let max_match_len : Int = 258
+let max_match_len : Int32 = 258
 
 ///|
-let min_match_len : Int = 3
+let min_match_len : Int32 = 3
 
 ///|
-let hash_size : Int = 1 << 15
+let hash_size : Int32 = 1 << 15
 
 ///|
-let max_chain : Int = 64
+let max_chain : Int32 = 64
 
 ///|
-fn pack_token_lit(sym : Int) -> Int {
+fn pack_token_lit(sym : Int32) -> Int32 {
   sym << 1
 }
 
 ///|
-fn pack_token_match(len : Int, dist : Int) -> Int {
+fn pack_token_match(len : Int32, dist : Int32) -> Int32 {
   (((dist << 9) | len) << 1) | 1
 }
 
 ///|
-fn token_is_match(token : Int) -> Bool {
+fn token_is_match(token : Int32) -> Bool {
   (token & 1) != 0
 }
 
 ///|
-fn token_lit_sym(token : Int) -> Int {
+fn token_lit_sym(token : Int32) -> Int32 {
   token >> 1
 }
 
 ///|
-fn token_match_len(token : Int) -> Int {
+fn token_match_len(token : Int32) -> Int32 {
   (token >> 1) & 0x1ff
 }
 
 ///|
-fn token_match_dist(token : Int) -> Int {
+fn token_match_dist(token : Int32) -> Int32 {
   token >> 10
 }
 
 ///|
 #valtype
 priv struct HuffNode {
-  freq : Int
-  left : Int
-  right : Int
-  sym : Int
+  freq : Int32
+  left : Int32
+  right : Int32
+  sym : Int32
 }
 
 ///|
-fn deflate_reverse_bits(code : Int, len : Int) -> Int {
+fn deflate_reverse_bits(code : Int32, len : Int32) -> Int32 {
   let mut v = code
   let mut out = 0
   let mut n = len
@@ -92,47 +92,51 @@ fn deflate_reverse_bits(code : Int, len : Int) -> Int {
 }
 
 ///|
-fn pack_code_len(code : Int, len : Int) -> Int {
+fn pack_code_len(code : Int32, len : Int32) -> Int32 {
   (len << 16) | code
 }
 
 ///|
-fn packed_code(packed : Int) -> Int {
+fn packed_code(packed : Int32) -> Int32 {
   packed & 0xffff
 }
 
 ///|
-fn packed_code_len(packed : Int) -> Int {
+fn packed_code_len(packed : Int32) -> Int32 {
   packed >> 16
 }
 
 ///|
-fn write_packed_code(writer : BitWriter, packed : Int) -> Unit {
+fn write_packed_code(writer : BitWriter, packed : Int32) -> Unit {
   writer.write_bits(packed_code(packed), packed_code_len(packed))
 }
 
 ///|
-fn pack_symbol_info(sym : Int, extra_bits : Int, extra_val : Int) -> Int {
+fn pack_symbol_info(
+  sym : Int32,
+  extra_bits : Int32,
+  extra_val : Int32,
+) -> Int32 {
   sym | (extra_bits << 9) | (extra_val << 13)
 }
 
 ///|
-fn packed_info_sym(packed : Int) -> Int {
+fn packed_info_sym(packed : Int32) -> Int32 {
   packed & 0x1ff
 }
 
 ///|
-fn packed_info_extra_bits(packed : Int) -> Int {
+fn packed_info_extra_bits(packed : Int32) -> Int32 {
   (packed >> 9) & 0xf
 }
 
 ///|
-fn packed_info_extra_val(packed : Int) -> Int {
+fn packed_info_extra_val(packed : Int32) -> Int32 {
   packed >> 13
 }
 
 ///|
-fn fixed_lit_code(sym : Int) -> Int {
+fn fixed_lit_code(sym : Int32) -> Int32 {
   if sym <= 143 {
     let code = sym + 0x30
     pack_code_len(deflate_reverse_bits(code, 8), 8)
@@ -149,12 +153,12 @@ fn fixed_lit_code(sym : Int) -> Int {
 }
 
 ///|
-fn fixed_dist_code(sym : Int) -> Int {
+fn fixed_dist_code(sym : Int32) -> Int32 {
   pack_code_len(deflate_reverse_bits(sym, 5), 5)
 }
 
 ///|
-fn length_code_info(len : Int) -> Int {
+fn length_code_info(len : Int32) -> Int32 {
   for i in 0..<deflate_length_base.length() {
     let base = deflate_length_base[i]
     let extra = deflate_length_extra[i]
@@ -167,7 +171,7 @@ fn length_code_info(len : Int) -> Int {
 }
 
 ///|
-fn dist_code_info(dist : Int) -> Int {
+fn dist_code_info(dist : Int32) -> Int32 {
   for i in 0..<deflate_dist_base.length() {
     let base = deflate_dist_base[i]
     let extra = deflate_dist_extra[i]
@@ -180,7 +184,7 @@ fn dist_code_info(dist : Int) -> Int {
 }
 
 ///|
-fn hash3(data : Bytes, pos : Int) -> Int {
+fn hash3(data : Bytes, pos : Int32) -> Int32 {
   let b0 = data[pos].to_int()
   let b1 = data[pos + 1].to_int()
   let b2 = data[pos + 2].to_int()
@@ -188,12 +192,12 @@ fn hash3(data : Bytes, pos : Int) -> Int {
 }
 
 ///|
-fn write_literal(writer : BitWriter, sym : Int) -> Unit {
+fn write_literal(writer : BitWriter, sym : Int32) -> Unit {
   write_packed_code(writer, fixed_lit_code(sym))
 }
 
 ///|
-fn write_match(writer : BitWriter, length : Int, distance : Int) -> Unit {
+fn write_match(writer : BitWriter, length : Int32, distance : Int32) -> Unit {
   let len_info = length_code_info(length)
   let len_extra_bits = packed_info_extra_bits(len_info)
   write_packed_code(writer, fixed_lit_code(packed_info_sym(len_info)))
@@ -216,9 +220,9 @@ fn write_end_block(writer : BitWriter) -> Unit {
 ///|
 fn insert_hash(
   data : Bytes,
-  pos : Int,
-  head : FixedArray[Int],
-  prev : FixedArray[Int],
+  pos : Int32,
+  head : FixedArray[Int32],
+  prev : FixedArray[Int32],
 ) -> Unit {
   if pos + 2 >= data.length() {
     return
@@ -229,11 +233,11 @@ fn insert_hash(
 }
 
 ///|
-fn build_tokens(data : Bytes) -> Array[Int] {
-  let tokens : Array[Int] = []
+fn build_tokens(data : Bytes) -> Array[Int32] {
+  let tokens : Array[Int32] = []
   let len = data.length()
-  let head : FixedArray[Int] = FixedArray::make(hash_size, -1)
-  let prev : FixedArray[Int] = FixedArray::make(len, -1)
+  let head : FixedArray[Int32] = FixedArray::make(hash_size, -1)
+  let prev : FixedArray[Int32] = FixedArray::make(len, -1)
   let mut pos = 0
   while pos < len {
     let remaining = len - pos
@@ -282,7 +286,7 @@ fn build_tokens(data : Bytes) -> Array[Int] {
 }
 
 ///|
-fn write_tokens_fixed(tokens : Array[Int], writer : BitWriter) -> Unit {
+fn write_tokens_fixed(tokens : Array[Int32], writer : BitWriter) -> Unit {
   for t in tokens {
     if token_is_match(t) {
       write_match(writer, token_match_len(t), token_match_dist(t))
@@ -293,7 +297,7 @@ fn write_tokens_fixed(tokens : Array[Int], writer : BitWriter) -> Unit {
 }
 
 ///|
-fn fixed_tokens_byte_length(tokens : Array[Int]) -> Int {
+fn fixed_tokens_byte_length(tokens : Array[Int32]) -> Int32 {
   let mut bits = 3 // BFINAL + BTYPE
   for t in tokens {
     if token_is_match(t) {
@@ -314,10 +318,10 @@ fn fixed_tokens_byte_length(tokens : Array[Int]) -> Int {
 ///|
 fn fill_huffman_lengths(
   nodes : Array[HuffNode],
-  node_id : Int,
-  depth : Int,
-  max_bits : Int,
-  lengths : Array[Int],
+  node_id : Int32,
+  depth : Int32,
+  max_bits : Int32,
+  lengths : Array[Int32],
 ) -> Bool {
   let node = nodes[node_id]
   if node.left < 0 && node.right < 0 {
@@ -340,7 +344,11 @@ fn fill_huffman_lengths(
 }
 
 ///|
-fn remove_active_at(active : Array[Int], active_len : Int, idx : Int) -> Int {
+fn remove_active_at(
+  active : Array[Int32],
+  active_len : Int32,
+  idx : Int32,
+) -> Int32 {
   for i in (idx + 1)..<active_len {
     active[i - 1] = active[i]
   }
@@ -349,10 +357,10 @@ fn remove_active_at(active : Array[Int], active_len : Int, idx : Int) -> Int {
 
 ///|
 fn build_huffman_lengths(
-  freqs : Array[Int],
-  symbol_count : Int,
-  max_bits : Int,
-) -> Array[Int]? {
+  freqs : Array[Int32],
+  symbol_count : Int32,
+  max_bits : Int32,
+) -> Array[Int32]? {
   let mut active_count = 0
   let mut first_sym = -1
   let mut second_sym = -1
@@ -369,7 +377,7 @@ fn build_huffman_lengths(
   if active_count == 0 {
     return None
   }
-  let lengths : Array[Int] = Array::make(symbol_count, 0)
+  let lengths : Array[Int32] = Array::make(symbol_count, 0)
   if active_count == 1 {
     lengths[first_sym] = 1
     return Some(lengths)
@@ -436,11 +444,11 @@ fn build_huffman_lengths(
 
 ///|
 fn build_canonical_codes(
-  lengths : Array[Int],
-  max_bits : Int,
-  scratch : Array[Int],
-) -> Array[Int] {
-  let codes : Array[Int] = Array::make(lengths.length(), 0)
+  lengths : Array[Int32],
+  max_bits : Int32,
+  scratch : Array[Int32],
+) -> Array[Int32] {
+  let codes : Array[Int32] = Array::make(lengths.length(), 0)
   let mut non_zero = 0
   let mut all_one_bit = true
   for len in lengths {
@@ -491,11 +499,11 @@ fn build_canonical_codes(
 
 ///|
 fn header_length_at(
-  lit_lengths : Array[Int],
-  hlit : Int,
-  dist_lengths : Array[Int],
-  idx : Int,
-) -> Int {
+  lit_lengths : Array[Int32],
+  hlit : Int32,
+  dist_lengths : Array[Int32],
+  idx : Int32,
+) -> Int32 {
   if idx < hlit {
     lit_lengths[idx]
   } else {
@@ -505,11 +513,11 @@ fn header_length_at(
 
 ///|
 fn count_rle_lengths(
-  lit_lengths : Array[Int],
-  hlit : Int,
-  dist_lengths : Array[Int],
-  hdist : Int,
-  cl_freq : Array[Int],
+  lit_lengths : Array[Int32],
+  hlit : Int32,
+  dist_lengths : Array[Int32],
+  hdist : Int32,
+  cl_freq : Array[Int32],
 ) -> Unit {
   let mut i = 0
   let total = hlit + hdist
@@ -557,10 +565,10 @@ fn count_rle_lengths(
 ///|
 fn write_rle_length_symbol(
   writer : BitWriter,
-  cl_codes : Array[Int],
-  sym : Int,
-  extra_bits : Int,
-  extra_val : Int,
+  cl_codes : Array[Int32],
+  sym : Int32,
+  extra_bits : Int32,
+  extra_val : Int32,
 ) -> Unit {
   write_packed_code(writer, cl_codes[sym])
   if extra_bits > 0 {
@@ -570,21 +578,21 @@ fn write_rle_length_symbol(
 
 ///|
 fn rle_length_symbol_bit_length(
-  cl_lengths : Array[Int],
-  sym : Int,
-  extra_bits : Int,
-) -> Int {
+  cl_lengths : Array[Int32],
+  sym : Int32,
+  extra_bits : Int32,
+) -> Int32 {
   cl_lengths[sym] + extra_bits
 }
 
 ///|
 fn rle_lengths_bit_length(
-  lit_lengths : Array[Int],
-  hlit : Int,
-  dist_lengths : Array[Int],
-  hdist : Int,
-  cl_lengths : Array[Int],
-) -> Int {
+  lit_lengths : Array[Int32],
+  hlit : Int32,
+  dist_lengths : Array[Int32],
+  hdist : Int32,
+  cl_lengths : Array[Int32],
+) -> Int32 {
   let mut bits = 0
   let mut i = 0
   let total = hlit + hdist
@@ -632,11 +640,11 @@ fn rle_lengths_bit_length(
 
 ///|
 fn write_rle_lengths(
-  lit_lengths : Array[Int],
-  hlit : Int,
-  dist_lengths : Array[Int],
-  hdist : Int,
-  cl_codes : Array[Int],
+  lit_lengths : Array[Int32],
+  hlit : Int32,
+  dist_lengths : Array[Int32],
+  hdist : Int32,
+  cl_codes : Array[Int32],
   writer : BitWriter,
 ) -> Unit {
   let mut i = 0
@@ -686,9 +694,9 @@ fn write_rle_lengths(
 
 ///|
 fn write_tokens_dynamic(
-  tokens : Array[Int],
-  lit_codes : Array[Int],
-  dist_codes : Array[Int],
+  tokens : Array[Int32],
+  lit_codes : Array[Int32],
+  dist_codes : Array[Int32],
   writer : BitWriter,
 ) -> Unit {
   for t in tokens {
@@ -716,8 +724,8 @@ fn write_tokens_dynamic(
 
 ///|
 fn write_tokens_dynamic_literals(
-  tokens : Array[Int],
-  lit_codes : Array[Int],
+  tokens : Array[Int32],
+  lit_codes : Array[Int32],
   writer : BitWriter,
 ) -> Unit {
   for t in tokens {
@@ -728,10 +736,10 @@ fn write_tokens_dynamic_literals(
 
 ///|
 fn dynamic_tokens_bit_length(
-  tokens : Array[Int],
-  lit_lengths : Array[Int],
-  dist_lengths : Array[Int],
-) -> Int {
+  tokens : Array[Int32],
+  lit_lengths : Array[Int32],
+  dist_lengths : Array[Int32],
+) -> Int32 {
   let mut bits = 0
   for t in tokens {
     if token_is_match(t) {
@@ -750,9 +758,9 @@ fn dynamic_tokens_bit_length(
 
 ///|
 fn dynamic_literal_tokens_bit_length(
-  tokens : Array[Int],
-  lit_lengths : Array[Int],
-) -> Int {
+  tokens : Array[Int32],
+  lit_lengths : Array[Int32],
+) -> Int32 {
   let mut bits = 0
   for t in tokens {
     bits += lit_lengths[token_lit_sym(t)]
@@ -762,11 +770,11 @@ fn dynamic_literal_tokens_bit_length(
 
 ///|
 fn deflate_compress_dynamic_tokens(
-  tokens : Array[Int],
-  fixed_len : Int,
+  tokens : Array[Int32],
+  fixed_len : Int32,
 ) -> Bytes? {
-  let lit_freq : Array[Int] = Array::make(286, 0)
-  let dist_freq : Array[Int] = Array::make(30, 0)
+  let lit_freq : Array[Int32] = Array::make(286, 0)
+  let dist_freq : Array[Int32] = Array::make(30, 0)
   for t in tokens {
     if token_is_match(t) {
       let len_info = length_code_info(token_match_len(t))
@@ -799,7 +807,7 @@ fn deflate_compress_dynamic_tokens(
     None => return None
     Some(v) => v
   }
-  let dist_lengths : Array[Int] = if dist_symbol_count == 0 {
+  let dist_lengths : Array[Int32] = if dist_symbol_count == 0 {
     dist_freq[0] = 1
     dist_freq
   } else if dist_symbol_count <= 2 {
@@ -842,7 +850,7 @@ fn deflate_compress_dynamic_tokens(
       }
     }
   }
-  let cl_lengths : Array[Int] = if cl_symbol_count == 0 {
+  let cl_lengths : Array[Int32] = if cl_symbol_count == 0 {
     return None
   } else if cl_symbol_count <= 2 {
     for i in 0..<19 {
@@ -859,7 +867,7 @@ fn deflate_compress_dynamic_tokens(
       Some(v) => v
     }
   }
-  let order : FixedArray[Int] = [
+  let order : FixedArray[Int32] = [
     16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
   ]
   let mut hclen = 4
@@ -915,7 +923,7 @@ fn deflate_compress_dynamic_tokens(
 }
 
 ///|
-fn deflate_compress_fixed_tokens(tokens : Array[Int]) -> Bytes {
+fn deflate_compress_fixed_tokens(tokens : Array[Int32]) -> Bytes {
   let writer = BitWriter::new()
   // BFINAL=1, BTYPE=01 (fixed Huffman)
   writer.write_bits(1, 1)

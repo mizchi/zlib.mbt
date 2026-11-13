@@ -1,0 +1,14 @@
+import {
+  "mizchi/zlib" @local,
+  "moonbitlang/core/compress/flate",
+  "moonbitlang/core/compress/zlib" @core_zlib,
+  "moonbitlang/core/compress/gzip",
+  "moonbitlang/core/bench",
+  "moonbitlang/core/json",
+}
+
+options(
+  "allow-experimental-packages": true,
+)
+
+pkgtype(kind: "executable")

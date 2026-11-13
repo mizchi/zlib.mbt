@@ -1,11 +1,20 @@
 # mizchi/zlib
 
+> **Maintenance ended. Version 0.4.11 is the final release.**
+> This repository is archived for existing users. New projects should use
+> [moonbitlang/core](https://github.com/moonbitlang/core):
+> [flate](https://mooncakes.io/docs/moonbitlang/core/compress/flate),
+> [zlib](https://mooncakes.io/docs/moonbitlang/core/compress/zlib), and
+> [gzip](https://mooncakes.io/docs/moonbitlang/core/compress/gzip).
+> See the [migration guide](https://github.com/mizchi/zlib.mbt/blob/main/MIGRATION.md)
+> for output limits, gzip boundary handling, and API differences.
+
 Pure MoonBit zlib/deflate implementation.
 
 ## Features
 
-- zlib streams (compress stored / full inflate)
-- raw deflate (stored compress / full inflate)
+- zlib streams (LZ77 compression / stored blocks / full inflate)
+- raw deflate (LZ77 compression / stored blocks / full inflate)
 - gzip (stored compress / full inflate)
 
 ## Quick Commands
@@ -17,6 +26,7 @@ just check     # type check
 just test      # run tests
 just bench     # run benchmarks
 just bench-compare  # compare vs system zlib (hyperfine)
+just bench-core native  # in-process comparison with MoonBit core (also js / wasm)
 just test-update  # update snapshot tests
 just info      # generate type definition files
 ```
@@ -47,6 +57,10 @@ Commands are very short (<5ms), so shell overhead can skew results. wasm/wasm-gc
 | zlib | 3.8 ms | 2.1 ms (flate2/miniz_oxide) | 1.8x slower | 31.8 ms | 22.9 ms |
 | deflate | 3.7 ms | 2.1 ms (flate2/miniz_oxide) | 1.8x slower | 30.0 ms | 22.6 ms |
 | gzip | 4.2 ms | 2.2 ms (flate2/miniz_oxide) | 1.9x slower | 30.7 ms | 27.1 ms |
+
+See [the MoonBit core comparison](benchmarks/CORE_COMPARISON.md) for current
+native/JS/Wasm timings and compressed sizes. The submitted stored-bound optimization
+is recorded in [the upstream PR report](benchmarks/CORE_STORED_BOUND_PR.md).
 
 ## Project Structure
 

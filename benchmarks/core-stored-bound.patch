@@ -1,0 +1,137 @@
+From 3bdbd9443fd7370a225bf93df6d965d3b7fd6d66 Mon Sep 17 00:00:00 2001
+From: mizchi <miz404@gmail.com>
+Date: Fri, 13 Nov 2026 21:12:59 +0900
+Subject: [PATCH] perf(compress/flate): return exact stored output bounds
+
+---
+ compress/flate/deflate_all.mbt         | 10 ++++
+ compress/flate/moon.pkg                |  1 +
+ compress/flate/stored_bound_wbtest.mbt | 77 ++++++++++++++++++++++++++
+ 3 files changed, 88 insertions(+)
+ create mode 100644 compress/flate/stored_bound_wbtest.mbt
+
+diff --git a/compress/flate/deflate_all.mbt b/compress/flate/deflate_all.mbt
+index 855c6bf8..deafea5c 100644
+--- a/compress/flate/deflate_all.mbt
++++ b/compress/flate/deflate_all.mbt
+@@ -89,12 +89,22 @@ pub fn Compressor::Compressor(
+ ///|
+ /// An output capacity sufficient for the selected strategy, with or without
+ /// `fast_store`. Panics for negative input sizes or an unrepresentable bound.
++/// Standard and Split return the exact stored size at level 0.
+ pub fn deflate_bound(
+   input_size : Int32,
+   strategy~ : Strategy = Standard(level=6),
+ ) -> Int32 {
+   guard input_size >= 0 else { abort("negative DEFLATE input size") }
+   let size = input_size.to_int64()
++  if strategy is Standard(level=0) || strategy is Split(level=0) {
++    // A stored block has a five-byte header and holds at most 65535 bytes.
++    // Even an empty input emits one block. No tokenization or splitting is used.
++    let bound = size + 5L * ((size + 65534L) / 65535L).max(1L)
++    guard bound <= 0x7fff_ffffL else {
++      abort("DEFLATE output capacity overflow")
++    }
++    return bound.to_int()
++  }
+   // Every planned block costs at most its stored encoding, plus one byte
+   // for alignment. Stored segments may themselves split at 65535 bytes.
+   // Split has at most seven parts per chunk (including match overhang);
+diff --git a/compress/flate/moon.pkg b/compress/flate/moon.pkg
+index c7ea00aa..72a7024f 100644
+--- a/compress/flate/moon.pkg
++++ b/compress/flate/moon.pkg
+@@ -15,6 +15,7 @@ import {
+ 
+ import {
+   "moonbitlang/core/test",
++  "moonbitlang/core/bench",
+ } for "wbtest"
+ 
+ // v128 is experimental; its import is used only by native/linear-wasm paths.
+diff --git a/compress/flate/stored_bound_wbtest.mbt b/compress/flate/stored_bound_wbtest.mbt
+new file mode 100644
+index 00000000..5017ddf5
+--- /dev/null
++++ b/compress/flate/stored_bound_wbtest.mbt
+@@ -0,0 +1,77 @@
++// Copyright 2026 International Digital Economy Academy
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++///|
++test "stored bound equals encoded size at block boundaries" {
++  for strategy in [Standard(level=0), Split(level=0)] {
++    for size in [0, 1, 2, 65534, 65535, 65536, 131069, 131070, 131071, 262144] {
++      let backing = Bytes::makei(size + 5, i => (i % 251).to_byte())
++      let source = backing[3:3 + size]
++      let capacity = deflate_bound(size, strategy~)
++      for dictionary in [None, Some(b"preset dictionary"[:])] {
++        for fast_store in [false, true] {
++          let codec = Compressor(strategy~, dictionary?, fast_store~)
++          let encoded = codec.compress(source)
++          @test.assert_eq(capacity, encoded.length())
++          let storage = FixedArray::make(capacity + 6, b'\xA5')
++          let output = storage.mut_view(start=3, end=3 + capacity)
++          @test.assert_eq(codec.compress_into(source, output), Some(capacity))
++          @test.assert_eq(Bytes::from_array(storage[3:3 + capacity]), encoded)
++          @test.assert_eq(storage[2], b'\xA5')
++          @test.assert_eq(storage[3 + capacity], b'\xA5')
++          @test.assert_eq(
++            codec.compress_into(
++              source,
++              storage.mut_view(start=3, end=2 + capacity),
++            ),
++            None,
++          )
++        }
++      }
++    }
++  }
++}
++
++///|
++test "stored bound remains representable at the final Int32 capacity" {
++  for strategy in [Standard(level=0), Split(level=0)] {
++    @test.assert_eq(deflate_bound(2147319812, strategy~), 2147483647)
++  }
++}
++
++///|
++fn materialize_stored_bound(input : BytesView, capacity : Int32) -> Bytes {
++  let storage = FixedArray::make(capacity, b'\x00')
++  let codec = Compressor(strategy=Standard(level=0))
++  guard codec.compress_into(input, storage.mut_view()) is Some(produced) else {
++    abort("stored output does not fit its bound")
++  }
++  Bytes::from_array(storage[:produced])
++}
++
++///|
++test "bench materializing stored output" (b : @bench.T) {
++  for size in [0, 1024, 262144, 1048576] {
++    let input = Bytes::makei(size, i => (i % 251).to_byte())
++    let blocks = ((size + 65534) / 65535).min(size).max(1)
++    let previous = size + 5 * (size / 65535 + blocks) + blocks + 1
++    let exact = deflate_bound(size, strategy=Standard(level=0))
++    b.bench(name="stored \{size} previous bound", count=7, () => {
++      b.keep(materialize_stored_bound(input, previous))
++    })
++    b.bench(name="stored \{size} exact bound", count=7, () => {
++      b.keep(materialize_stored_bound(input, exact))
++    })
++  }
++}
+-- 
+2.53.0
+

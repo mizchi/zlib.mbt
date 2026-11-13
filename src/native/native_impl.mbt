@@ -5,61 +5,61 @@ pub type ZlibError = @zlib.ZlibError
 #borrow(input, output)
 extern "C" fn zlib_compress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_compress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_compress"
 
 ///|
 #borrow(input, output)
 extern "C" fn zlib_decompress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_decompress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_decompress"
 
 ///|
 #borrow(input, output)
 extern "C" fn deflate_compress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_deflate_compress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_deflate_compress"
 
 ///|
 #borrow(input, output)
 extern "C" fn deflate_decompress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_deflate_decompress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_deflate_decompress"
 
 ///|
 #borrow(input, output)
 extern "C" fn gzip_compress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_gzip_compress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_gzip_compress"
 
 ///|
 #borrow(input, output)
 extern "C" fn gzip_decompress_ffi(
   input : Bytes,
-  input_len : Int,
+  input_len : Int32,
   output : Bytes,
-  max_output_len : Int,
-) -> Int = "mizchi_zlib_native_gzip_decompress"
+  max_output_len : Int32,
+) -> Int32 = "mizchi_zlib_native_gzip_decompress"
 
 ///|
 fn call_ffi(
   data : Bytes,
-  max_ratio : Int,
-  ffi : (Bytes, Int, Bytes, Int) -> Int,
+  max_ratio : Int32,
+  ffi : (Bytes, Int32, Bytes, Int32) -> Int32,
 ) -> Bytes raise ZlibError {
   let input_len = data.length()
   let initial = input_len * max_ratio
@@ -94,8 +94,8 @@ pub fn zlib_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn zlib_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.zlib_decompress_at(data, start)
 }
 
@@ -114,8 +114,8 @@ pub fn deflate_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn deflate_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.deflate_decompress_at(data, start)
 }
 
@@ -134,7 +134,7 @@ pub fn gzip_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn gzip_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.gzip_decompress_at(data, start)
 }

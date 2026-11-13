@@ -198,7 +198,7 @@ test "gzip decompress fixture" {
 }
 
 ///|
-let fixture_size : Int = 256 * 1024
+let fixture_size : Int32 = 256 * 1024
 
 ///|
 fn assert_fixture_pattern(data : Bytes) -> Unit raise {
@@ -345,7 +345,7 @@ test "zlib decompress accepts non-0x78 CMF" {
 }
 
 ///|
-/// Helper to assert that decoding raises a ZlibError.
+/// Helper to assert that decoding raises a @zlib.ZlibError.
 fn[T] assert_decode_error(decode : () -> T raise @zlib.ZlibError) -> Unit raise {
   try decode() catch {
     _ => ()

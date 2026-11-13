@@ -14,8 +14,8 @@ pub fn zlib_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn zlib_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.zlib_decompress_at(data, start)
 }
 
@@ -32,8 +32,8 @@ pub fn deflate_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn deflate_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.deflate_decompress_at(data, start)
 }
 
@@ -50,7 +50,7 @@ pub fn gzip_decompress(data : Bytes) -> Bytes raise ZlibError {
 ///|
 pub fn gzip_decompress_at(
   data : Bytes,
-  start : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   @zlib.gzip_decompress_at(data, start)
 }

@@ -1,0 +1,11 @@
+{
+  "base_commit": "c728bce6389a3b53111b4ccfb7b6d94dc96d014d",
+  "worktree": "/Users/mz/ghq/github.com/moonbitlang/core-zlib-perf",
+  "baseline_worktree": "/tmp/zlib-core-baseline-20261113",
+  "command": "moon bench compress/zlib compress/gzip --target TARGET --no-parallelize",
+  "measurement": "in-process mean of 7 calibrated batches, microseconds",
+  "scope": "frame includes checksum; complete compress includes deflate and framing; JS uses original implementation",
+  "tests": "DEFLATE output capacity overflow\nTotal tests: 200, passed: 200, failed: 0. [wasm]\nTotal tests: 195, passed: 195, failed: 0. [wasm-gc]\nTotal tests: 195, passed: 195, failed: 0. [js]\nTotal tests: 213, passed: 213, failed: 0. [native]\n",
+  "patch_sha256": "0bc0cf280cf2d6e242e3e50843f4fff5d774e58ad3a49d197bd83d30e54e8632",
+  "patch_validation": "Applies cleanly to pristine c728bce6389a3b53111b4ccfb7b6d94dc96d014d; reverse-apply check passed on tested worktree"
+}

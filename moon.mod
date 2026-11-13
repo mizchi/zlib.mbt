@@ -1,10 +1,9 @@
 name = "mizchi/zlib"
 
-version = "0.4.10"
+version = "0.4.11"
 
 import {
-  "moonbitlang/x@0.5.5",
-  "moonbitlang/async@0.22.4",
+  "moonbitlang/x@0.5.7",
 }
 
 readme = "README.mbt.md"
@@ -15,7 +14,7 @@ license = "Apache-2.0"
 
 keywords = [ "zlib", "deflate" ]
 
-description = "Pure MoonBit zlib/deflate implementation."
+description = "Final release. Use moonbitlang/core/compress for new projects. Pure MoonBit zlib/deflate implementation."
 
 preferred_target = "js"
 

@@ -1,0 +1,4 @@
+# Preserve whitespace in patch context and original benchmark output.
+benchmarks/*.patch -whitespace
+benchmarks/results/*.log -whitespace
+benchmarks/results/stored-bound/*.log -whitespace

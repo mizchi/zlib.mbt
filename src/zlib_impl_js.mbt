@@ -24,9 +24,9 @@ pub fn zlib_compress(data : Bytes) -> Bytes {
 /// `OutputTooLarge`.
 pub fn zlib_decompress_at(
   data : Bytes,
-  start : Int,
-  max_size? : Int = default_max_decompressed_size,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+  max_size~ : Int32 = default_max_decompressed_size,
+) -> (Bytes, Int32) raise ZlibError {
   if start < 0 || start + 2 > data.length() {
     raise ZlibError::InvalidData("Zlib data too short")
   }
@@ -64,7 +64,7 @@ pub fn zlib_decompress_at(
 /// Decompress a full zlib stream.
 pub fn zlib_decompress(
   data : Bytes,
-  max_size? : Int = default_max_decompressed_size,
+  max_size~ : Int32 = default_max_decompressed_size,
 ) -> Bytes raise ZlibError {
   let (result, offset) = zlib_decompress_at(data, 0, max_size~)
   if offset != data.length() {
@@ -83,9 +83,9 @@ pub fn deflate_compress(data : Bytes) -> Bytes {
 /// Decompress raw deflate stream from the given offset.
 pub fn deflate_decompress_at(
   data : Bytes,
-  start : Int,
-  max_size? : Int = default_max_decompressed_size,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+  max_size~ : Int32 = default_max_decompressed_size,
+) -> (Bytes, Int32) raise ZlibError {
   inflate_deflate_stream(data, start, max_size)
 }
 
@@ -93,7 +93,7 @@ pub fn deflate_decompress_at(
 /// Decompress a full raw deflate stream.
 pub fn deflate_decompress(
   data : Bytes,
-  max_size? : Int = default_max_decompressed_size,
+  max_size~ : Int32 = default_max_decompressed_size,
 ) -> Bytes raise ZlibError {
   let (result, offset) = deflate_decompress_at(data, 0, max_size~)
   if offset != data.length() {
@@ -112,9 +112,9 @@ pub fn gzip_compress(data : Bytes) -> Bytes {
 /// Decompress gzip stream from the given offset.
 pub fn gzip_decompress_at(
   data : Bytes,
-  start : Int,
-  max_size? : Int = default_max_decompressed_size,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+  max_size~ : Int32 = default_max_decompressed_size,
+) -> (Bytes, Int32) raise ZlibError {
   if start < 0 || start + 10 > data.length() {
     raise ZlibError::InvalidData("Gzip data too short")
   }
@@ -168,7 +168,7 @@ pub fn gzip_decompress_at(
   if stored_crc != computed_crc {
     raise ZlibError::InvalidData("CRC32 mismatch in gzip trailer")
   }
-  let size = Int::reinterpret_as_uint(result.length())
+  let size = Int32::reinterpret_as_uint(result.length())
   if stored_size != size {
     raise ZlibError::InvalidData("ISIZE mismatch in gzip trailer")
   }
@@ -179,7 +179,7 @@ pub fn gzip_decompress_at(
 /// Decompress a full gzip stream.
 pub fn gzip_decompress(
   data : Bytes,
-  max_size? : Int = default_max_decompressed_size,
+  max_size~ : Int32 = default_max_decompressed_size,
 ) -> Bytes raise ZlibError {
   let (result, offset) = gzip_decompress_at(data, 0, max_size~)
   if offset != data.length() {

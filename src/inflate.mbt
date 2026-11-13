@@ -2,26 +2,26 @@
 
 ///|
 /// Length base values for symbols 257..285
-let length_base : FixedArray[Int] = [
+let length_base : FixedArray[Int32] = [
   3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83,
   99, 115, 131, 163, 195, 227, 258,
 ]
 
 ///|
-let length_extra : FixedArray[Int] = [
+let length_extra : FixedArray[Int32] = [
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5,
   5, 0,
 ]
 
 ///|
 /// Distance base values for symbols 0..29
-let dist_base : FixedArray[Int] = [
+let dist_base : FixedArray[Int32] = [
   1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
   1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
 ]
 
 ///|
-let dist_extra : FixedArray[Int] = [
+let dist_extra : FixedArray[Int32] = [
   0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
   12, 12, 13, 13,
 ]
@@ -34,9 +34,9 @@ fn bytes_from_array(arr : Array[Byte]) -> Bytes {
 ///|
 fn inflate_deflate_stream(
   data : Bytes,
-  start : Int,
-  max_size : Int,
-) -> (Bytes, Int) raise ZlibError {
+  start : Int32,
+  max_size : Int32,
+) -> (Bytes, Int32) raise ZlibError {
   if max_size < 0 {
     raise ZlibError::InvalidData("max_size must be non-negative")
   }
@@ -51,7 +51,7 @@ fn inflate_deflate_stream(
 fn inflate_blocks(
   reader : BitReader,
   output : Array[Byte],
-  max_size : Int,
+  max_size : Int32,
 ) -> Unit raise ZlibError {
   let mut is_final = false
   while !is_final {
@@ -78,7 +78,7 @@ fn inflate_blocks(
 fn inflate_stored_block(
   reader : BitReader,
   output : Array[Byte],
-  max_size : Int,
+  max_size : Int32,
 ) -> Unit raise ZlibError {
   reader.align_byte()
   let len = reader.read_u16_le_aligned()
@@ -100,7 +100,7 @@ fn inflate_huffman_block(
   output : Array[Byte],
   lit_tree : HuffmanTree,
   dist_tree : HuffmanTree,
-  max_size : Int,
+  max_size : Int32,
 ) -> Unit raise ZlibError {
   while true {
     let sym = lit_tree.decode(reader)
@@ -160,7 +160,7 @@ fn inflate_huffman_block(
 
 ///|
 fn build_fixed_trees() -> (HuffmanTree, HuffmanTree) raise ZlibError {
-  let lit_lengths : Array[Int] = []
+  let lit_lengths : Array[Int32] = []
   for i in 0..<288 {
     let len = if i <= 143 {
       8
@@ -173,7 +173,7 @@ fn build_fixed_trees() -> (HuffmanTree, HuffmanTree) raise ZlibError {
     }
     lit_lengths.push(len)
   }
-  let dist_lengths : Array[Int] = []
+  let dist_lengths : Array[Int32] = []
   for _ in 0..<32 {
     dist_lengths.push(5)
   }
@@ -189,10 +189,10 @@ fn build_dynamic_trees(
   let hlit = reader.read_bits(5) + 257
   let hdist = reader.read_bits(5) + 1
   let hclen = reader.read_bits(4) + 4
-  let order : FixedArray[Int] = [
+  let order : FixedArray[Int32] = [
     16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
   ]
-  let code_len_lengths : Array[Int] = []
+  let code_len_lengths : Array[Int32] = []
   for _ in 0..<19 {
     code_len_lengths.push(0)
   }
@@ -201,7 +201,7 @@ fn build_dynamic_trees(
   }
   let code_len_tree = build_huffman_tree(code_len_lengths, 7)
   let total = hlit + hdist
-  let lengths : Array[Int] = []
+  let lengths : Array[Int32] = []
   let mut prev = 0
   let mut has_prev = false
   while lengths.length() < total {
@@ -247,11 +247,11 @@ fn build_dynamic_trees(
       raise ZlibError::InvalidData("Invalid code length symbol")
     }
   }
-  let lit_lengths : Array[Int] = []
+  let lit_lengths : Array[Int32] = []
   for i in 0..<hlit {
     lit_lengths.push(lengths[i])
   }
-  let dist_lengths : Array[Int] = []
+  let dist_lengths : Array[Int32] = []
   for i in 0..<hdist {
     dist_lengths.push(lengths[hlit + i])
   }
@@ -265,7 +265,7 @@ fn build_dynamic_trees(
 }
 
 ///|
-fn all_zero_lengths(lengths : Array[Int]) -> Bool {
+fn all_zero_lengths(lengths : Array[Int32]) -> Bool {
   for len in lengths {
     if len != 0 {
       return false

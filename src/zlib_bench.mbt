@@ -4,13 +4,13 @@
 /// - moon bench --target native
 
 ///|
-let bench_size : Int = 256 * 1024
+let bench_size : Int32 = 256 * 1024
 
 ///|
-let deflate_bench_size : Int = 16 * 1024
+let deflate_bench_size : Int32 = 16 * 1024
 
 ///|
-fn make_bench_bytes(size : Int) -> Bytes {
+fn make_bench_bytes(size : Int32) -> Bytes {
   let buf : Array[Byte] = []
   for i = 0; i < size; i = i + 1 {
     buf.push((i % 256).to_byte())
@@ -19,7 +19,7 @@ fn make_bench_bytes(size : Int) -> Bytes {
 }
 
 ///|
-fn make_repeated_bench_bytes(size : Int) -> Bytes {
+fn make_repeated_bench_bytes(size : Int32) -> Bytes {
   let buf : Array[Byte] = []
   for i = 0; i < size; i = i + 1 {
     buf.push((i % 64).to_byte())

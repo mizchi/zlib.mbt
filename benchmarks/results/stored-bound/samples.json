@@ -1,0 +1,578 @@
+[
+  {
+    "target": "js",
+    "run": 1,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 6.48,
+    "std_dev_us": 0.83048
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 6.62,
+    "std_dev_us": 0.8816
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 10.02,
+    "std_dev_us": 1.15
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 9.81,
+    "std_dev_us": 1.06
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 708.43,
+    "std_dev_us": 45.77
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 676.8,
+    "std_dev_us": 3.65
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 2680.0,
+    "std_dev_us": 20.39
+  },
+  {
+    "target": "js",
+    "run": 1,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 2710.0,
+    "std_dev_us": 44.17
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 4.95,
+    "std_dev_us": 0.06498000000000001
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 4.95,
+    "std_dev_us": 0.10263
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 9.19,
+    "std_dev_us": 0.2883
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 9.57,
+    "std_dev_us": 0.29008999999999996
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 670.9,
+    "std_dev_us": 23.31
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 645.2,
+    "std_dev_us": 16.48
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 2430.0,
+    "std_dev_us": 109.56
+  },
+  {
+    "target": "js",
+    "run": 2,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 2400.0,
+    "std_dev_us": 86.01
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 4.94,
+    "std_dev_us": 0.08925
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 5.05,
+    "std_dev_us": 0.22991
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 7.93,
+    "std_dev_us": 0.7761
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 8.85,
+    "std_dev_us": 0.32483
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 648.12,
+    "std_dev_us": 19.22
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 651.23,
+    "std_dev_us": 14.92
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 2500.0,
+    "std_dev_us": 57.57
+  },
+  {
+    "target": "js",
+    "run": 3,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 2620.0,
+    "std_dev_us": 39.22
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 0.8813,
+    "std_dev_us": 0.02554
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 0.88428,
+    "std_dev_us": 0.032729999999999995
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 0.87021,
+    "std_dev_us": 0.01848
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 0.88979,
+    "std_dev_us": 0.01594
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 13.15,
+    "std_dev_us": 0.47650000000000003
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 6.46,
+    "std_dev_us": 0.04569
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 47.09,
+    "std_dev_us": 1.11
+  },
+  {
+    "target": "native",
+    "run": 1,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 23.4,
+    "std_dev_us": 0.37272000000000005
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 0.88414,
+    "std_dev_us": 0.0146
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 0.8935599999999999,
+    "std_dev_us": 0.0386
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 0.87238,
+    "std_dev_us": 0.0086
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 0.8686900000000001,
+    "std_dev_us": 0.00492
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 13.91,
+    "std_dev_us": 0.42116000000000003
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 6.55,
+    "std_dev_us": 0.09013
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 47.96,
+    "std_dev_us": 0.78076
+  },
+  {
+    "target": "native",
+    "run": 2,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 24.3,
+    "std_dev_us": 0.79788
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 0.87187,
+    "std_dev_us": 0.00819
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 0.87248,
+    "std_dev_us": 0.013130000000000001
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 0.86326,
+    "std_dev_us": 0.00722
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 0.85988,
+    "std_dev_us": 0.00359
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 14.3,
+    "std_dev_us": 0.36756
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 6.8,
+    "std_dev_us": 1.0
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 48.47,
+    "std_dev_us": 0.79612
+  },
+  {
+    "target": "native",
+    "run": 3,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 24.09,
+    "std_dev_us": 0.95104
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 1.01,
+    "std_dev_us": 0.01165
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 0.9672000000000001,
+    "std_dev_us": 0.01028
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 1.05,
+    "std_dev_us": 0.00881
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 1.02,
+    "std_dev_us": 0.02441
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 10.95,
+    "std_dev_us": 0.15527000000000002
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 7.15,
+    "std_dev_us": 0.10108
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 46.69,
+    "std_dev_us": 0.54971
+  },
+  {
+    "target": "wasm",
+    "run": 1,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 24.64,
+    "std_dev_us": 0.8022
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 1.04,
+    "std_dev_us": 0.02616
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 0.97756,
+    "std_dev_us": 0.00723
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 1.07,
+    "std_dev_us": 0.0046
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 1.04,
+    "std_dev_us": 0.01459
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 11.01,
+    "std_dev_us": 0.46848
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 7.07,
+    "std_dev_us": 0.10790999999999999
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 40.64,
+    "std_dev_us": 1.69
+  },
+  {
+    "target": "wasm",
+    "run": 2,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 23.13,
+    "std_dev_us": 0.36381
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 0,
+    "variant": "previous",
+    "mean_us": 1.05,
+    "std_dev_us": 0.07893000000000001
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 0,
+    "variant": "exact",
+    "mean_us": 1.05,
+    "std_dev_us": 0.02413
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 1024,
+    "variant": "previous",
+    "mean_us": 1.08,
+    "std_dev_us": 0.01511
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 1024,
+    "variant": "exact",
+    "mean_us": 1.04,
+    "std_dev_us": 0.013869999999999999
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 262144,
+    "variant": "previous",
+    "mean_us": 11.0,
+    "std_dev_us": 0.21938
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 262144,
+    "variant": "exact",
+    "mean_us": 7.32,
+    "std_dev_us": 0.42206
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 1048576,
+    "variant": "previous",
+    "mean_us": 45.41,
+    "std_dev_us": 0.99811
+  },
+  {
+    "target": "wasm",
+    "run": 3,
+    "size": 1048576,
+    "variant": "exact",
+    "mean_us": 26.02,
+    "std_dev_us": 4.01
+  }
+]

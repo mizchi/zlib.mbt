@@ -30,11 +30,11 @@ let adler_weights : FixedArray[Byte] = {
 #borrow(data, weights)
 fn adler32_chunks_bytes(
   data : Bytes,
-  offset : Int,
-  count16 : Int,
+  offset : Int32,
+  count16 : Int32,
   weights : FixedArray[Byte],
-  a : Int,
-  b : Int,
+  a : Int32,
+  b : Int32,
 ) -> Int64 =
   #|(func (param i32) (param i32) (param i32) (param i32) (param i32) (param i32) (result i64) (local i32) (local i32) (local i32) (local i32) (local v128) (local v128) (local v128) local.get 3 v128.load local.set 10 local.get 1 local.get 2 i32.const 4 i32.shl i32.add local.set 7 local.get 1 local.set 6 block loop local.get 6 local.get 7 i32.ge_s br_if 1 local.get 0 local.get 6 i32.add v128.load local.set 11 local.get 11 i16x8.extadd_pairwise_i8x16_u i32x4.extadd_pairwise_i16x8_u local.set 12 local.get 12 i32x4.extract_lane 0 local.get 12 i32x4.extract_lane 1 i32.add local.get 12 i32x4.extract_lane 2 i32.add local.get 12 i32x4.extract_lane 3 i32.add local.set 8 local.get 11 local.get 10 i16x8.extmul_low_i8x16_u i32x4.extadd_pairwise_i16x8_u local.get 11 local.get 10 i16x8.extmul_high_i8x16_u i32x4.extadd_pairwise_i16x8_u i32x4.add local.set 12 local.get 12 i32x4.extract_lane 0 local.get 12 i32x4.extract_lane 1 i32.add local.get 12 i32x4.extract_lane 2 i32.add local.get 12 i32x4.extract_lane 3 i32.add local.set 9 local.get 5 local.get 4 i32.const 4 i32.shl i32.add local.get 9 i32.add local.set 5 local.get 4 local.get 8 i32.add local.set 4 local.get 6 i32.const 16 i32.add local.set 6 br 0 end end local.get 5 i64.extend_i32_u i64.const 32 i64.shl local.get 4 i64.extend_i32_u i64.or)
 
@@ -43,19 +43,19 @@ fn adler32_chunks_bytes(
 #borrow(data, weights)
 fn adler32_chunks_fixed(
   data : FixedArray[Byte],
-  offset : Int,
-  count16 : Int,
+  offset : Int32,
+  count16 : Int32,
   weights : FixedArray[Byte],
-  a : Int,
-  b : Int,
+  a : Int32,
+  b : Int32,
 ) -> Int64 =
   #|(func (param i32) (param i32) (param i32) (param i32) (param i32) (param i32) (result i64) (local i32) (local i32) (local i32) (local i32) (local v128) (local v128) (local v128) local.get 3 v128.load local.set 10 local.get 1 local.get 2 i32.const 4 i32.shl i32.add local.set 7 local.get 1 local.set 6 block loop local.get 6 local.get 7 i32.ge_s br_if 1 local.get 0 local.get 6 i32.add v128.load local.set 11 local.get 11 i16x8.extadd_pairwise_i8x16_u i32x4.extadd_pairwise_i16x8_u local.set 12 local.get 12 i32x4.extract_lane 0 local.get 12 i32x4.extract_lane 1 i32.add local.get 12 i32x4.extract_lane 2 i32.add local.get 12 i32x4.extract_lane 3 i32.add local.set 8 local.get 11 local.get 10 i16x8.extmul_low_i8x16_u i32x4.extadd_pairwise_i16x8_u local.get 11 local.get 10 i16x8.extmul_high_i8x16_u i32x4.extadd_pairwise_i16x8_u i32x4.add local.set 12 local.get 12 i32x4.extract_lane 0 local.get 12 i32x4.extract_lane 1 i32.add local.get 12 i32x4.extract_lane 2 i32.add local.get 12 i32x4.extract_lane 3 i32.add local.set 9 local.get 5 local.get 4 i32.const 4 i32.shl i32.add local.get 9 i32.add local.set 5 local.get 4 local.get 8 i32.add local.set 4 local.get 6 i32.const 16 i32.add local.set 6 br 0 end end local.get 5 i64.extend_i32_u i64.const 32 i64.shl local.get 4 i64.extend_i32_u i64.or)
 
 ///|
-fn adler32_impl(data : Bytes) -> Int {
+fn adler32_impl(data : Bytes) -> Int32 {
   let len = data.length()
-  let mut a : UInt = 1
-  let mut b : UInt = 0
+  let mut a : UInt32 = 1
+  let mut b : UInt32 = 0
   let mut i = 0
   while i < len {
     let remaining = len - i
@@ -83,14 +83,14 @@ fn adler32_impl(data : Bytes) -> Int {
     a = a % adler_mod
     b = b % adler_mod
   }
-  UInt::reinterpret_as_int((b << 16) | a)
+  UInt32::reinterpret_as_int((b << 16) | a)
 }
 
 ///|
-fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int {
+fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int32 {
   let len = data.length()
-  let mut a : UInt = 1
-  let mut b : UInt = 0
+  let mut a : UInt32 = 1
+  let mut b : UInt32 = 0
   let mut i = 0
   while i < len {
     let remaining = len - i
@@ -118,5 +118,5 @@ fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int {
     a = a % adler_mod
     b = b % adler_mod
   }
-  UInt::reinterpret_as_int((b << 16) | a)
+  UInt32::reinterpret_as_int((b << 16) | a)
 }

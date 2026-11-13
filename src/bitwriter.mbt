@@ -3,8 +3,8 @@
 ///|
 priv struct BitWriter {
   buf : Array[Byte]
-  mut bit_buf : Int
-  mut bit_count : Int
+  mut bit_buf : Int32
+  mut bit_count : Int32
 }
 
 ///|
@@ -13,7 +13,7 @@ fn BitWriter::new() -> BitWriter {
 }
 
 ///|
-fn BitWriter::write_bits(self : BitWriter, bits : Int, count : Int) -> Unit {
+fn BitWriter::write_bits(self : BitWriter, bits : Int32, count : Int32) -> Unit {
   let mut value = bits
   let mut remaining = count
   while remaining > 0 {

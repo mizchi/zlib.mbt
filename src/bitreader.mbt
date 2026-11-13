@@ -3,18 +3,18 @@
 ///|
 priv struct BitReader {
   data : Bytes
-  mut byte_pos : Int
+  mut byte_pos : Int32
   mut bit_buf : UInt64
-  mut bit_count : Int
+  mut bit_count : Int32
 }
 
 ///|
-fn BitReader::new(data : Bytes, start : Int) -> BitReader {
+fn BitReader::new(data : Bytes, start : Int32) -> BitReader {
   { data, byte_pos: start, bit_buf: 0, bit_count: 0, }
 }
 
 ///|
-fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
+fn BitReader::ensure_bits(self : BitReader, n : Int32) -> Unit raise ZlibError {
   while self.bit_count < n {
     let remaining = self.data.length() - self.byte_pos
     if remaining <= 0 {
@@ -58,7 +58,7 @@ fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
 }
 
 ///|
-fn BitReader::peek_bits(self : BitReader, n : Int) -> Int raise ZlibError {
+fn BitReader::peek_bits(self : BitReader, n : Int32) -> Int32 raise ZlibError {
   if n == 0 {
     return 0
   }
@@ -69,7 +69,7 @@ fn BitReader::peek_bits(self : BitReader, n : Int) -> Int raise ZlibError {
 }
 
 ///|
-fn BitReader::drop_bits(self : BitReader, n : Int) -> Unit {
+fn BitReader::drop_bits(self : BitReader, n : Int32) -> Unit {
   if n == 0 {
     return
   }
@@ -78,7 +78,7 @@ fn BitReader::drop_bits(self : BitReader, n : Int) -> Unit {
 }
 
 ///|
-fn BitReader::read_bits(self : BitReader, n : Int) -> Int raise ZlibError {
+fn BitReader::read_bits(self : BitReader, n : Int32) -> Int32 raise ZlibError {
   let result = self.peek_bits(n)
   self.drop_bits(n)
   result
@@ -97,7 +97,7 @@ fn BitReader::align_byte(self : BitReader) -> Unit {
 ///|
 
 ///|
-fn BitReader::read_u16_le_aligned(self : BitReader) -> Int raise ZlibError {
+fn BitReader::read_u16_le_aligned(self : BitReader) -> Int32 raise ZlibError {
   if self.bit_count != 0 {
     self.align_byte()
   }
@@ -114,7 +114,7 @@ fn BitReader::read_u16_le_aligned(self : BitReader) -> Int raise ZlibError {
 fn BitReader::read_bytes_aligned(
   self : BitReader,
   output : Array[Byte],
-  len : Int,
+  len : Int32,
 ) -> Unit raise ZlibError {
   if self.bit_count != 0 {
     self.align_byte()
@@ -129,6 +129,6 @@ fn BitReader::read_bytes_aligned(
 }
 
 ///|
-fn BitReader::offset(self : BitReader) -> Int {
+fn BitReader::offset(self : BitReader) -> Int32 {
   self.byte_pos
 }

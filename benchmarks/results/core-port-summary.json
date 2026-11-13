@@ -1,0 +1,338 @@
+[
+  {
+    "target": "native",
+    "name": "gzip frame 1024",
+    "before": {
+      "mean_us": 0.29847,
+      "std_dev_us": 0.00101
+    },
+    "after": {
+      "mean_us": 0.23650000000000002,
+      "std_dev_us": 0.00292
+    },
+    "time_reduction_pct": 20.762555700740435,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "gzip frame 262144",
+    "before": {
+      "mean_us": 72.39,
+      "std_dev_us": 1.59
+    },
+    "after": {
+      "mean_us": 61.08,
+      "std_dev_us": 0.10987999999999999
+    },
+    "time_reduction_pct": 15.623704931620397,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "gzip compress level 0 262144",
+    "before": {
+      "mean_us": 88.63,
+      "std_dev_us": 0.21574000000000002
+    },
+    "after": {
+      "mean_us": 79.94,
+      "std_dev_us": 0.10793000000000001
+    },
+    "time_reduction_pct": 9.804806498928132,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "gzip compress level 6 262144",
+    "before": {
+      "mean_us": 232.59,
+      "std_dev_us": 0.19643000000000002
+    },
+    "after": {
+      "mean_us": 231.78,
+      "std_dev_us": 0.10281
+    },
+    "time_reduction_pct": 0.348252289436346,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "zlib frame 1024",
+    "before": {
+      "mean_us": 0.14099,
+      "std_dev_us": 0.00121
+    },
+    "after": {
+      "mean_us": 0.08588,
+      "std_dev_us": 0.00014000000000000001
+    },
+    "time_reduction_pct": 39.08787857294844,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "zlib frame 262144",
+    "before": {
+      "mean_us": 29.15,
+      "std_dev_us": 0.58328
+    },
+    "after": {
+      "mean_us": 19.67,
+      "std_dev_us": 0.0463
+    },
+    "time_reduction_pct": 32.52144082332761,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "zlib compress level 0 262144",
+    "before": {
+      "mean_us": 48.87,
+      "std_dev_us": 0.62181
+    },
+    "after": {
+      "mean_us": 39.42,
+      "std_dev_us": 0.22235
+    },
+    "time_reduction_pct": 19.33701657458563,
+    "implementation_changed": true
+  },
+  {
+    "target": "native",
+    "name": "zlib compress level 6 262144",
+    "before": {
+      "mean_us": 332.0,
+      "std_dev_us": 65.46
+    },
+    "after": {
+      "mean_us": 190.7,
+      "std_dev_us": 0.35122000000000003
+    },
+    "time_reduction_pct": 42.56024096385542,
+    "implementation_changed": true
+  },
+  {
+    "target": "js",
+    "name": "gzip frame 1024",
+    "before": {
+      "mean_us": 4.04,
+      "std_dev_us": 0.82435
+    },
+    "after": {
+      "mean_us": 3.22,
+      "std_dev_us": 0.15453
+    },
+    "time_reduction_pct": 20.297029702970292,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "gzip frame 262144",
+    "before": {
+      "mean_us": 809.98,
+      "std_dev_us": 50.27
+    },
+    "after": {
+      "mean_us": 729.01,
+      "std_dev_us": 20.8
+    },
+    "time_reduction_pct": 9.996543124521596,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "gzip compress level 0 262144",
+    "before": {
+      "mean_us": 2680.0,
+      "std_dev_us": 187.08
+    },
+    "after": {
+      "mean_us": 2450.0,
+      "std_dev_us": 71.33
+    },
+    "time_reduction_pct": 8.582089552238802,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "gzip compress level 6 262144",
+    "before": {
+      "mean_us": 1380.0,
+      "std_dev_us": 141.89
+    },
+    "after": {
+      "mean_us": 1140.0,
+      "std_dev_us": 47.95
+    },
+    "time_reduction_pct": 17.391304347826086,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "zlib frame 1024",
+    "before": {
+      "mean_us": 3.92,
+      "std_dev_us": 0.88385
+    },
+    "after": {
+      "mean_us": 3.0,
+      "std_dev_us": 0.00316
+    },
+    "time_reduction_pct": 23.469387755102044,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "zlib frame 262144",
+    "before": {
+      "mean_us": 691.92,
+      "std_dev_us": 9.63
+    },
+    "after": {
+      "mean_us": 699.07,
+      "std_dev_us": 23.96
+    },
+    "time_reduction_pct": -1.0333564573939302,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "zlib compress level 0 262144",
+    "before": {
+      "mean_us": 2440.0,
+      "std_dev_us": 42.63
+    },
+    "after": {
+      "mean_us": 2250.0,
+      "std_dev_us": 18.71
+    },
+    "time_reduction_pct": 7.786885245901642,
+    "implementation_changed": false
+  },
+  {
+    "target": "js",
+    "name": "zlib compress level 6 262144",
+    "before": {
+      "mean_us": 1060.0,
+      "std_dev_us": 10.48
+    },
+    "after": {
+      "mean_us": 1090.0,
+      "std_dev_us": 44.96
+    },
+    "time_reduction_pct": -2.8301886792452935,
+    "implementation_changed": false
+  },
+  {
+    "target": "wasm",
+    "name": "gzip frame 1024",
+    "before": {
+      "mean_us": 0.59593,
+      "std_dev_us": 0.01575
+    },
+    "after": {
+      "mean_us": 0.45410000000000006,
+      "std_dev_us": 0.00146
+    },
+    "time_reduction_pct": 23.799775141375644,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "gzip frame 262144",
+    "before": {
+      "mean_us": 135.35,
+      "std_dev_us": 26.91
+    },
+    "after": {
+      "mean_us": 106.93,
+      "std_dev_us": 0.15167
+    },
+    "time_reduction_pct": 20.997414111562605,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "gzip compress level 0 262144",
+    "before": {
+      "mean_us": 139.62,
+      "std_dev_us": 3.5
+    },
+    "after": {
+      "mean_us": 127.56,
+      "std_dev_us": 0.95793
+    },
+    "time_reduction_pct": 8.6377309840997,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "gzip compress level 6 262144",
+    "before": {
+      "mean_us": 495.69,
+      "std_dev_us": 45.14
+    },
+    "after": {
+      "mean_us": 452.66,
+      "std_dev_us": 0.70374
+    },
+    "time_reduction_pct": 8.680828743771308,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "zlib frame 1024",
+    "before": {
+      "mean_us": 0.25107,
+      "std_dev_us": 0.00059
+    },
+    "after": {
+      "mean_us": 0.13918,
+      "std_dev_us": 0.00057
+    },
+    "time_reduction_pct": 44.56526068427132,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "zlib frame 262144",
+    "before": {
+      "mean_us": 31.99,
+      "std_dev_us": 0.54549
+    },
+    "after": {
+      "mean_us": 25.2,
+      "std_dev_us": 0.056170000000000005
+    },
+    "time_reduction_pct": 21.225382932166305,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "zlib compress level 0 262144",
+    "before": {
+      "mean_us": 51.91,
+      "std_dev_us": 0.19905
+    },
+    "after": {
+      "mean_us": 45.05,
+      "std_dev_us": 0.38933999999999996
+    },
+    "time_reduction_pct": 13.215180119437486,
+    "implementation_changed": true
+  },
+  {
+    "target": "wasm",
+    "name": "zlib compress level 6 262144",
+    "before": {
+      "mean_us": 371.93,
+      "std_dev_us": 2.7
+    },
+    "after": {
+      "mean_us": 373.01,
+      "std_dev_us": 3.47
+    },
+    "time_reduction_pct": -0.2903772215201661,
+    "implementation_changed": true
+  }
+]

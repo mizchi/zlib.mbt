@@ -1,16 +1,25 @@
 # mizchi/zlib
 
+> **Maintenance ended. Version 0.4.11 is the final release.**
+> This repository is archived for existing users. New projects should use
+> [moonbitlang/core](https://github.com/moonbitlang/core):
+> [flate](https://mooncakes.io/docs/moonbitlang/core/compress/flate),
+> [zlib](https://mooncakes.io/docs/moonbitlang/core/compress/zlib), and
+> [gzip](https://mooncakes.io/docs/moonbitlang/core/compress/gzip).
+> See the [migration guide](https://github.com/mizchi/zlib.mbt/blob/main/MIGRATION.md)
+> for output limits, gzip boundary handling, and API differences.
+
 Pure MoonBit zlib/deflate implementation. Supports:
-- zlib streams (compress stored / full inflate)
-- raw deflate (stored compress / full inflate)
+- zlib streams (LZ77 compression / stored blocks / full inflate)
+- raw deflate (LZ77 compression / stored blocks / full inflate)
 - gzip (stored compress / full inflate)
 
 ```mbt check
 ///|
 test "roundtrip stored" {
   let data : Bytes = "hello"
-  let compressed = zlib_compress_stored(data)
-  let decompressed = zlib_decompress_stored(compressed)
+  let compressed = @zlib.zlib_compress_stored(data)
+  let decompressed = @zlib.zlib_decompress_stored(compressed)
   inspect(decompressed.length(), content="5")
   inspect(decompressed[0], content="b'\\x68'")
   inspect(decompressed[4], content="b'\\x6F'")

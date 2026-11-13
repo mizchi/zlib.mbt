@@ -1,0 +1,17 @@
+# Build outputs and installed development dependencies.
+target/
+.mooncakes/
+apm_modules/
+
+# Repository-only development and research material.
+/personas/
+/benchmarks/
+/scripts/
+/tools/
+/component/
+/src/core_compare/
+/AGENTS.md
+/CLAUDE.md
+/apm.yml
+/apm.lock.yaml
+/justfile

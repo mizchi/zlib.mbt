@@ -1,8 +1,8 @@
 import {
-  "moonbitlang/core/env",
   "mizchi/zlib",
   "moonbitlang/x/fs",
   "moonbitlang/x/sys",
+  "moonbitlang/core/env",
 }
 
 pkgtype(kind: "executable")

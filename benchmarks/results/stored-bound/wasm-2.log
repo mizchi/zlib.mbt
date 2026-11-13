@@ -1,0 +1,11 @@
+[moonbitlang/core] bench compress/flate/stored_bound_wbtest.mbt:64 ("bench materializing stored output") ok
+name                          time (mean ± σ)         range (min … max) 
+stored 0 previous bound          1.04 µs ±  26.16 ns     1.02 µs …   1.09 µs  in 7 ×  93442 runs
+stored 0 exact bound           977.56 ns ±   7.23 ns   964.28 ns … 985.56 ns  in 7 × 100000 runs
+stored 1024 previous bound       1.07 µs ±   4.60 ns     1.07 µs …   1.08 µs  in 7 ×  92907 runs
+stored 1024 exact bound          1.04 µs ±  14.59 ns     1.02 µs …   1.06 µs  in 7 ×  99555 runs
+stored 262144 previous bound    11.01 µs ± 468.48 ns    10.42 µs …  11.64 µs  in 7 ×   9273 runs
+stored 262144 exact bound        7.07 µs ± 107.91 ns     6.88 µs …   7.22 µs  in 7 ×  14301 runs
+stored 1048576 previous bound   40.64 µs ±   1.69 µs    38.72 µs …  42.86 µs  in 7 ×   2560 runs
+stored 1048576 exact bound      23.13 µs ± 363.81 ns    22.63 µs …  23.44 µs  in 7 ×   4079 runs
+Total tests: 1, passed: 1, failed: 0.

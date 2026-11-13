@@ -10,19 +10,19 @@ pub fn deflate_compress(Bytes) -> Bytes
 
 pub fn deflate_decompress(Bytes) -> Bytes raise @zlib.ZlibError
 
-pub fn deflate_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+pub fn deflate_decompress_at(Bytes, Int32) -> (Bytes, Int32) raise @zlib.ZlibError
 
 pub fn gzip_compress(Bytes) -> Bytes
 
 pub fn gzip_decompress(Bytes) -> Bytes raise @zlib.ZlibError
 
-pub fn gzip_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+pub fn gzip_decompress_at(Bytes, Int32) -> (Bytes, Int32) raise @zlib.ZlibError
 
 pub fn zlib_compress(Bytes) -> Bytes
 
 pub fn zlib_decompress(Bytes) -> Bytes raise @zlib.ZlibError
 
-pub fn zlib_decompress_at(Bytes, Int) -> (Bytes, Int) raise @zlib.ZlibError
+pub fn zlib_decompress_at(Bytes, Int32) -> (Bytes, Int32) raise @zlib.ZlibError
 
 // Errors
 

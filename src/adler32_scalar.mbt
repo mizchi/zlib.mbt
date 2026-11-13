@@ -1,9 +1,9 @@
 // Scalar Adler-32 — used on every target except wasm.
 
 ///|
-fn adler32_impl(data : Bytes) -> Int {
-  let mut s1 : UInt = Int::reinterpret_as_uint(1)
-  let mut s2 : UInt = Int::reinterpret_as_uint(0)
+fn adler32_impl(data : Bytes) -> Int32 {
+  let mut s1 : UInt32 = Int32::reinterpret_as_uint(1)
+  let mut s2 : UInt32 = Int32::reinterpret_as_uint(0)
   let mut i = 0
   let len = data.length()
   while i < len {
@@ -18,13 +18,13 @@ fn adler32_impl(data : Bytes) -> Int {
     s2 = s2 % adler_mod
     i += chunk
   }
-  UInt::reinterpret_as_int((s2 << 16) | s1)
+  UInt32::reinterpret_as_int((s2 << 16) | s1)
 }
 
 ///|
-fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int {
-  let mut s1 : UInt = Int::reinterpret_as_uint(1)
-  let mut s2 : UInt = Int::reinterpret_as_uint(0)
+fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int32 {
+  let mut s1 : UInt32 = Int32::reinterpret_as_uint(1)
+  let mut s2 : UInt32 = Int32::reinterpret_as_uint(0)
   let len = data.length()
   let mut i = 0
   while i < len {
@@ -39,5 +39,5 @@ fn adler32_fixed_impl(data : FixedArray[Byte]) -> Int {
     s2 = s2 % adler_mod
     i += chunk
   }
-  UInt::reinterpret_as_int((s2 << 16) | s1)
+  UInt32::reinterpret_as_int((s2 << 16) | s1)
 }

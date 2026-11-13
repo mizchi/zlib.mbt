@@ -1,0 +1,17 @@
+[moonbitlang/core] bench compress/gzip/frame_wbtest.mbt:23 ("bench complete frame allocation") ok
+name              time (mean ± σ)         range (min … max) 
+gzip frame 1024    298.47 ns ±   1.01 ns   297.26 ns … 299.91 ns  in 7 × 100000 runs
+gzip frame 262144   72.39 µs ±   1.59 µs    70.88 µs …  75.49 µs  in 7 ×   1423 runs
+[moonbitlang/core] bench compress/gzip/frame_wbtest.mbt:37 ("bench complete stored compression") ok
+name                         time (mean ± σ)         range (min … max) 
+gzip compress level 0 262144   88.63 µs ± 215.74 ns    88.45 µs …  89.03 µs  in 7 ×   1124 runs
+gzip compress level 6 262144  232.59 µs ± 196.43 ns   232.34 µs … 232.89 µs  in 7 ×    431 runs
+[moonbitlang/core] bench compress/zlib/frame_wbtest.mbt:23 ("bench complete frame allocation") ok
+name              time (mean ± σ)         range (min … max) 
+zlib frame 1024    140.99 ns ±   1.21 ns   139.18 ns … 142.47 ns  in 7 × 100000 runs
+zlib frame 262144   29.15 µs ± 583.28 ns    28.30 µs …  30.19 µs  in 7 ×   3351 runs
+[moonbitlang/core] bench compress/zlib/frame_wbtest.mbt:48 ("bench complete stored compression") ok
+name                         time (mean ± σ)         range (min … max) 
+zlib compress level 0 262144   48.87 µs ± 621.81 ns    47.86 µs …  49.77 µs  in 7 ×   2018 runs
+zlib compress level 6 262144  332.00 µs ±  65.46 µs   252.63 µs … 424.23 µs  in 7 ×    512 runs
+Total tests: 4, passed: 4, failed: 0.
